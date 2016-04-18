@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Loggers>
+        <Logger name="pl.jagiellonian.Source" level="trace" />
+        <Logger name="pl.jagiellonian.InitTest" level="trace" />
+    </Loggers>
+</Configuration>
