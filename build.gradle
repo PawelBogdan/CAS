@@ -7,6 +7,8 @@ apply plugin: 'eclipse'
 apply plugin: 'maven'
 
 group = 'pl.jagiellonian'
+version = '0.01'
+description = """"""
 
 buildscript {
     repositories {
@@ -30,12 +32,13 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-test {
+test{
     testLogging.showStandardStreams = true
     testLogging.exceptionFormat = 'full'
 }
 
-jar {
+jar{
+    archiveName "$project.name"+'.jar'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
         attributes 'Main-Class': 'pl.jagiellonian.Source'
