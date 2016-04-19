@@ -5,6 +5,8 @@ task wrapper(type: Wrapper) {
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
+apply plugin: 'jacoco'
+apply plugin: "com.github.kt3k.coveralls"
 
 group = 'pl.jagiellonian'
 version = '0.01'
@@ -13,6 +15,10 @@ description = """"""
 buildscript {
     repositories {
         mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.6.3"
     }
 }
 
@@ -42,6 +48,18 @@ jar{
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
         attributes 'Main-Class': 'pl.jagiellonian.Source'
+    }
+}
+
+jacoco {
+    toolVersion = "0.7.6.201602180812"
+    reportsDir = file("$buildDir/jacoco")
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true // coveralls plugin depends on xml format report
+        html.enabled = true
     }
 }
 
