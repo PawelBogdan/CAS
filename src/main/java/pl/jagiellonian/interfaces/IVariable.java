@@ -1,10 +1,13 @@
 package pl.jagiellonian.interfaces;
 
+import java.util.Map;
+
 /**
  * Created by Z-DNA on 20.04.16.
  */
 public interface IVariable{
     Boolean isExpression();
+    IVariable expand(Map<String, String> map);
     ITreeExpression add(IVariable variable);
     ITreeExpression sub(IVariable variable);
     ITreeExpression mult(IVariable variable);

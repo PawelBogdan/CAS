@@ -3,6 +3,7 @@ package pl.jagiellonian.implementation;
 import pl.jagiellonian.interfaces.ITreeExpression;
 import pl.jagiellonian.interfaces.IVariable;
 
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static pl.jagiellonian.utils.Operation.*;
@@ -19,6 +20,14 @@ public class Variable implements IVariable{
 
     public Boolean isExpression(){
         return Pattern.compile("^\\(.+\\)$").matcher(name).matches();
+    }
+
+    @Override
+    public IVariable expand(Map<String, String> map) {
+        if(map.containsKey(name)){
+            return TreeExpression.parse(map.get(name));
+        }
+        return this;
     }
 
     @Override

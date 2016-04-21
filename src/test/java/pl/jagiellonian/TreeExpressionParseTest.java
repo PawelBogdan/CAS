@@ -15,6 +15,9 @@ public class TreeExpressionParseTest {
     public void initTest(){
         String exp;
 
+        exp = "a";
+        assertEquals(exp.replaceAll("\\s", ""), parse(exp).toString());
+
         exp = "a*x^2";
         assertEquals(exp.replaceAll("\\s", ""), parse(exp).toString());
 

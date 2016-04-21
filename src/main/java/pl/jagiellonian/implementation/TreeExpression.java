@@ -8,6 +8,7 @@ import pl.jagiellonian.utils.Operation;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -129,11 +130,6 @@ public class TreeExpression implements ITreeExpression {
     }
 
     @Override
-    public Integer getChildrenCount() {
-        return children.size();
-    }
-
-    @Override
     public ITreeExpression setParenthesis(){
         this.parenthesis = true;
         return this;
@@ -142,6 +138,25 @@ public class TreeExpression implements ITreeExpression {
     @Override
     public Boolean getParenthesis(){
         return parenthesis;
+    }
+
+    @Override
+    public ITreeExpression expand(Map<String, String> map) {
+        for (int i = 0; i < children.size(); i++) {
+            IVariable child = children.get(i);
+            if(child instanceof ITreeExpression){
+                child.expand(map);
+            } else {
+                if(map.containsKey(child.toString())){
+                    IVariable newChild = parse(map.get(child.toString()));
+                    if(newChild instanceof ITreeExpression){
+                        ((ITreeExpression) newChild).setParenthesis();
+                    }
+                    children.set(i, newChild);
+                }
+            }
+        }
+        return this;
     }
 
     @Override
