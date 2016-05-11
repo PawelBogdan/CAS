@@ -26,7 +26,7 @@ public class PolynomialParser {
         List<String> monomialList = new ArrayList<>();
         List<Map<List<Integer>, Integer>> polynomialList = new ArrayList<>();
 
-        Pattern pattern = Pattern.compile("[\\+-]?([1-9][0-9]*\\*)?([a-zA-Z](_[1-9][0-9]*)?(\\^[1-9][0-9]*)?\\*?)+");
+        Pattern pattern = Pattern.compile("[\\+-]?(\\((.*?)(\\)\\^[1-9][0-9]*)+)|[\\+-]?([1-9][0-9]*\\*)?([a-zA-Z](_[1-9][0-9]*)?(\\^[1-9][0-9]*)?\\*?)+");
         Matcher matcher = pattern.matcher(expression);
         if (!isPolynomial(expression)) {
             //TODO
@@ -43,7 +43,24 @@ public class PolynomialParser {
     }
 
     public boolean isPolynomial(String expression) {
-        Pattern pattern = Pattern.compile( "([\\+-]?([1-9][0-9]*\\*)?([a-zA-Z](_[1-9][0-9]*)?(\\^[1-9][0-9]*)?\\*?)+)+");
+        Pattern pattern = Pattern.compile( "([\\+-]?(\\((.*?)(\\)\\^[1-9][0-9]*)+)|[\\+-]?([1-9][0-9]*\\*)?([a-zA-Z](_[1-9][0-9]*)?(\\^[1-9][0-9]*)?\\*?)+)+");
         return pattern.matcher(expression).matches();
+    }
+
+    private boolean haveBrackets(String expression) {
+        Pattern pattern = Pattern.compile("[\\+-]?(\\((.*?)(\\)\\^[1-9][0-9]*)+)");
+        return pattern.matcher(expression).matches();
+    }
+
+    private String removeLeftBracket(String expression) {
+        return expression.replaceFirst("[\\+-]?\\(", "");
+    }
+
+    private String removeRightBracket(String expression) {
+        return replaceLast(expression, "\\)\\^[1-9][0-9]*", "");
+    }
+
+    private String replaceLast(String text, String regex, String replacement) {
+        return text.replaceFirst("(?s)(.*)" + regex, "$1" + replacement);
     }
 }

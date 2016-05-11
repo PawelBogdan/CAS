@@ -15,5 +15,6 @@ public class Source {
         logger.debug("Hello in main");
         PolynomialFunction p = new PolynomialFunction(new double[]{2.5, 2D, 5D});
         logger.debug(p.toString());
+        System.out.print("bla");
     }
 }
