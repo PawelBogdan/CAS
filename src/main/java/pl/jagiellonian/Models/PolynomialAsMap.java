@@ -23,7 +23,8 @@ public class PolynomialAsMap {
         this.polynomialMap = polynomialMap;
     }
 
-    public PolynomialAsMap multipleWith(Map<List<Integer>, Integer> polynomialMap) {
+    public PolynomialAsMap multipleWith(PolynomialAsMap myPolynomial) {
+        Map<List<Integer>, Integer> polynomialMap = myPolynomial.getPolynomialMap();
         Map<List<Integer>, Integer> polynomialResult = new HashMap<>();
 
         for (Map.Entry<List<Integer>, Integer> polynomial : polynomialMap.entrySet()) {
