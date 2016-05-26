@@ -65,7 +65,7 @@ public class PolynomialAsMap {
         VariablePowers:
         for (List<Integer> variablePowers : polynomialMap.keySet()) {
             int initialConstant = polynomialMap.get(variablePowers);
-            if (parsedExpressionToReplace.getConstant().isPresent() && parsedExpressionToReplace.getConstant().get().equals(polynomialMap.get(variablePowers))) {
+            if (parsedExpressionToReplace.getConstant().isPresent() && !parsedExpressionToReplace.getConstant().get().equals(polynomialMap.get(variablePowers))) {
                 insertExpressionIntoMap(afterReplacement, variablePowers, initialConstant);
                 continue;
             }
