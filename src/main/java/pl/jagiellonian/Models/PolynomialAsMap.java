@@ -61,9 +61,7 @@ public class PolynomialAsMap {
                     .filter(integers -> index < integers.size() && integers.get(index) > 0)
                     .mapToInt(integers -> integers.parallelStream().mapToInt(value -> value).sum())
                     .max();
-            if (max.isPresent()) {
-                return max.getAsInt();
-            }
+            return max.isPresent() ? max.getAsInt() : 0;
         }
         throw new WrongFormatException();
     }
