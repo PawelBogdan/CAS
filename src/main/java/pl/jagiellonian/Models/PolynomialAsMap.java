@@ -49,6 +49,14 @@ public class PolynomialAsMap {
         return polynomialAsMap;
     }
 
+    public int degree(String variable) {
+        throw new RuntimeException("Not yet implemented");
+    }
+
+    public int degree(List<String> variables) {
+        throw new RuntimeException("Not yet implemented");
+    }
+
     @Override
     public String toString() {
         //TODO
