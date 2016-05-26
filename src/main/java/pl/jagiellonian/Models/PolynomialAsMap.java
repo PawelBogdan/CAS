@@ -1,14 +1,18 @@
 package pl.jagiellonian.Models;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import pl.jagiellonian.exceptions.WrongFormatException;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 /**
  * Created by lukaszrzepka on 11.05.2016.
  */
 public class PolynomialAsMap {
+    private static final Pattern VARIABLE = Pattern.compile("x_([1-9][0-9]*)");
+
     private Map<List<Integer>, Integer> polynomialMap;
 
     public PolynomialAsMap(Map<List<Integer>, Integer> polynomialMap) {
@@ -50,11 +54,23 @@ public class PolynomialAsMap {
     }
 
     public int degree(String variable) {
-        throw new RuntimeException("Not yet implemented");
+        Matcher matcher = VARIABLE.matcher(variable);
+        if (matcher.matches()) {
+            int index = Integer.parseInt(matcher.group(1)) - 1;
+            OptionalInt max = polynomialMap.keySet().parallelStream()
+                    .filter(integers -> index < integers.size() && integers.get(index) > 0)
+                    .mapToInt(integers -> integers.parallelStream().mapToInt(value -> value).sum())
+                    .max();
+            if (max.isPresent()) {
+                return max.getAsInt();
+            }
+        }
+        throw new WrongFormatException();
     }
 
     public int degree(List<String> variables) {
-        throw new RuntimeException("Not yet implemented");
+        OptionalInt max = variables.parallelStream().mapToInt(this::degree).max();
+        return max.isPresent() ? max.getAsInt() : 0;
     }
 
     @Override
