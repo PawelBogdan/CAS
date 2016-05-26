@@ -11,7 +11,7 @@ public class ExpressionParserTest {
     public void testParseExpression() throws Exception {
         String expression = "(-8)x_4x_1^65x_4";
         ParsedExpression parsedExpression = ExpressionParser.parseExpression(expression);
-        assertEquals(-8, parsedExpression.getConstant());
+        assertEquals(-8, parsedExpression.getConstant().get().intValue());
         assertEquals(2, parsedExpression.getVariables().size());
         assertEquals(65, parsedExpression.getVariablePower(1));
         assertEquals(2, parsedExpression.getVariablePower(4));
