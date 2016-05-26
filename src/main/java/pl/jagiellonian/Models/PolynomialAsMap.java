@@ -58,8 +58,8 @@ public class PolynomialAsMap {
         if (matcher.matches()) {
             int index = Integer.parseInt(matcher.group(1)) - 1;
             OptionalInt max = polynomialMap.keySet().parallelStream()
-                    .filter(integers -> index < integers.size() && integers.get(index) > 0)
-                    .mapToInt(integers -> integers.parallelStream().mapToInt(value -> value).sum())
+                    .filter(degreeList -> index < degreeList.size())
+                    .mapToInt(degreeList -> degreeList.get(index))
                     .max();
             return max.isPresent() ? max.getAsInt() : 0;
         }
@@ -67,7 +67,23 @@ public class PolynomialAsMap {
     }
 
     public int degree(List<String> variables) {
-        OptionalInt max = variables.parallelStream().mapToInt(this::degree).max();
+        List<Integer> indexes = new ArrayList<>();
+        for (String variable : variables) {
+            Matcher matcher = VARIABLE.matcher(variable);
+            if (matcher.matches()) {
+                indexes.add(Integer.parseInt(matcher.group(1)) - 1);
+            } else {
+                throw new WrongFormatException();
+            }
+        }
+
+        OptionalInt max = polynomialMap.keySet().parallelStream()
+                .mapToInt(degreeList ->
+                        indexes.parallelStream()
+                                .filter(index -> index < degreeList.size() && degreeList.get(index) > 0)
+                                .mapToInt(degreeList::get)
+                                .sum())
+                .max();
         return max.isPresent() ? max.getAsInt() : 0;
     }
 

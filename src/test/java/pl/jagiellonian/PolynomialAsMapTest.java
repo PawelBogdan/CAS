@@ -50,14 +50,14 @@ public class PolynomialAsMapTest {
         map.put(new ArrayList<>(Arrays.asList(3, 2, 0)), -1);
 
         PolynomialAsMap polynomialAsMap = new PolynomialAsMap(map);
-        assertEquals(6, polynomialAsMap.degree("x_1"));
-        assertEquals(5, polynomialAsMap.degree("x_2"));
-        assertEquals(6, polynomialAsMap.degree("x_3"));
+        assertEquals(3, polynomialAsMap.degree("x_1"));
+        assertEquals(2, polynomialAsMap.degree("x_2"));
+        assertEquals(4, polynomialAsMap.degree("x_3"));
         assertEquals(0, polynomialAsMap.degree("x_5"));
         assertEquals(0, polynomialAsMap.degree("x_91234"));
         assertEquals(0, polynomialAsMap.degree(new ArrayList<>()));
-        assertEquals(6, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_1", "x_2"))));
-        assertEquals(6, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_2", "x_3"))));
+        assertEquals(5, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_1", "x_2"))));
+        assertEquals(4, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_2", "x_3"))));
         assertEquals(6, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_1", "x_3"))));
         assertEquals(6, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_1", "x_2", "x_3"))));
     }
