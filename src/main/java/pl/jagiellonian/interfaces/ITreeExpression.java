@@ -12,6 +12,7 @@ public interface ITreeExpression extends IVariable{
     IVariable getLastChild();
     IVariable setLastChild(IVariable child);
     List<IVariable> getChildren();
+    List<IVariable> getAllNodes(ITreeExpression expression);
     Operation getOperation();
     Integer getPriority();
     ITreeExpression setParenthesis();

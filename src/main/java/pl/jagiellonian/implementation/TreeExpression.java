@@ -6,6 +6,7 @@ import pl.jagiellonian.interfaces.ITreeExpression;
 import pl.jagiellonian.interfaces.IVariable;
 import pl.jagiellonian.utils.Operation;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -167,6 +168,26 @@ public class TreeExpression implements ITreeExpression {
             }
         }
         return this;
+    }
+
+    @Override
+    public List<IVariable> getAllNodes(ITreeExpression expression) {
+        if (expression.getOperation() == Operation.POW) {
+            List<IVariable> nodes = new ArrayList<>();
+            for (int i = 0; i < Integer.valueOf(expression.getChildren().get(1).toString()); i++) {
+                nodes.add(expression.getChildren().get(0));
+            }
+            return nodes;
+        }
+        List<IVariable> nodes = new ArrayList<>();
+        for (IVariable variable : expression.getChildren()) {
+            if (variable.isExpression()) {
+                nodes.addAll(getAllNodes((ITreeExpression) variable));
+            } else {
+                nodes.add(variable);
+            }
+        }
+        return nodes;
     }
 
     @Override
