@@ -5,7 +5,7 @@ import pl.jagiellonian.exceptions.WrongFormatException;
 
 import java.util.*;
 
-import static pl.jagiellonian.Parsers.ExpressionParser.isMultipleExpression;
+import static pl.jagiellonian.Parsers.ExpressionParser.isSingleExpression;
 import static pl.jagiellonian.Parsers.ExpressionParser.parseExpression;
 
 /**
@@ -53,7 +53,7 @@ public class PolynomialAsMap {
     }
 
     public void replaceExpression(String expressionToReplace, String replacementExpression) {
-        if (isMultipleExpression(expressionToReplace) || isMultipleExpression(replacementExpression)) {
+        if (!isSingleExpression(expressionToReplace) || !isSingleExpression(replacementExpression)) {
             throw new WrongFormatException();
         }
         ParsedExpression parsedExpressionToReplace = parseExpression(expressionToReplace);

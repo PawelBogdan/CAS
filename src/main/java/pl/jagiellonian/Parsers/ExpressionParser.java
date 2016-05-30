@@ -5,8 +5,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ExpressionParser {
-    private static final Pattern MULTIPLE_EXPRESSION = Pattern.compile(".+\\+.*");
-    private static final Pattern CONSTANT_IN_EXPRESSION = Pattern.compile("\\(?(-?[1-9][0-9]*)\\)?.*");
+    private static final Pattern MULTIPLE_EXPRESSION = Pattern.compile("((\\*?)x_(?:[1-9][0-9]*(?:\\^-?[0-9]+)*))*");
+    private static final Pattern CONSTANT_IN_EXPRESSION = Pattern.compile("\\(?(-?[1-9][0-9]*)\\)?(.*)");
     private static final Pattern VARIABLE_IN_EXPRESSION = Pattern.compile("x_([1-9][0-9]*(?:\\^-?[0-9]+)*)");
 
     private ExpressionParser() {
@@ -26,7 +26,7 @@ public class ExpressionParser {
             int power = parsedExpression.getVariablePower(index);
             if (split.length > 1) {
                 power += Integer.valueOf(split[1]);
-            }else{
+            } else {
                 power++;
             }
             parsedExpression.putVariable(index, power);
@@ -34,8 +34,16 @@ public class ExpressionParser {
         return parsedExpression;
     }
 
-    public static boolean isMultipleExpression(String expression){
-        return MULTIPLE_EXPRESSION.matcher(expression).matches();
+    public static boolean isSingleExpression(String expression) {
+        if (expression.length() == 0) {
+            return false;
+        }
+        Matcher constantMatcher = CONSTANT_IN_EXPRESSION.matcher(expression);
+        if (constantMatcher.matches()) {
+            return MULTIPLE_EXPRESSION.matcher(constantMatcher.group(2)).matches();
+        }
+        Matcher variablesMatcher = MULTIPLE_EXPRESSION.matcher(expression);
+        return variablesMatcher.matches() && variablesMatcher.groupCount() > 1 && !("*").equals(expression.charAt(variablesMatcher.start()) + "");
     }
 
     public static class ParsedExpression {
