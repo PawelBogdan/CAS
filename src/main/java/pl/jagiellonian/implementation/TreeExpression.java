@@ -40,6 +40,16 @@ public class TreeExpression implements ITreeExpression {
         addChild(variable2);
     }
 
+    @Override
+    public List<IVariable> getChildren() {
+        return children;
+    }
+
+    @Override
+    public Operation getOperation() {
+        return operation;
+    }
+
     public static IVariable parse(String expression) {
         /**
          * -- ex: parse given expression --
