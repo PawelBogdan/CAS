@@ -16,7 +16,7 @@ public class LexicographicOrderSorter implements Sorter<IVariable> {
             return var;
         }
         ITreeExpression expr = (ITreeExpression) var;
-        List<IVariable> allNodes = expr.getAllNodes(expr);
+        List<IVariable> allNodes = expr.getAllNodes();
         allNodes.sort((o1, o2) -> o1.toString().compareTo(o2.toString()));
         IVariable result = allNodes.get(0);
         for (int i = 1; i < allNodes.size(); i++) {

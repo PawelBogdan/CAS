@@ -12,8 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static pl.jagiellonian.utils.Operation.*;
+import static pl.jagiellonian.utils.Operation.ADD;
+import static pl.jagiellonian.utils.Operation.DIV;
+import static pl.jagiellonian.utils.Operation.MULT;
+import static pl.jagiellonian.utils.Operation.POW;
+import static pl.jagiellonian.utils.Operation.SUB;
 
 /**
  * Created by Z-DNA on 20.04.16.
@@ -26,29 +32,19 @@ public class TreeExpression implements ITreeExpression {
     public TreeExpression(Operation operation, IVariable variable) {
         this.operation = operation;
         children = new LinkedList<>();
-        if(variable instanceof ITreeExpression){
-            if(((ITreeExpression) variable).getPriority() > getPriority() || !operation.isLeftAssociativity()){
-                ((ITreeExpression)variable).setParenthesis();
+        if (variable instanceof ITreeExpression) {
+            if (((ITreeExpression) variable).getPriority() > getPriority() || !operation.isLeftAssociativity()) {
+                ((ITreeExpression) variable).setParenthesis();
             }
             children.add(variable);
         } else {
-            children.add(variable.isExpression()?parse(variable.toString()):variable);
+            children.add(variable.isExpression() ? parse(variable.toString()) : variable);
         }
     }
 
     public TreeExpression(Operation operation, IVariable variable, IVariable variable2) {
         this(operation, variable);
         addChild(variable2);
-    }
-
-    @Override
-    public List<IVariable> getChildren() {
-        return children;
-    }
-
-    @Override
-    public Operation getOperation() {
-        return operation;
     }
 
     public static IVariable parse(String expression) {
@@ -65,11 +61,11 @@ public class TreeExpression implements ITreeExpression {
         expression = expression.replaceAll("\\s", "");
         //System.out.println(expression);
         Pattern exprPattern = Pattern.compile("(\\((.*?)\\)|([a-zA-Z]+(_?[a-zA-Z1-9]+)*)|[1-9]+)(([\\+-/\\^\\*])(\\((.*?)\\)|([a-zA-Z]+(_?[a-zA-Z1-9]+)*)|[1-9]+))*");
-        if(!exprPattern.matcher(expression).matches()){
+        if (!exprPattern.matcher(expression).matches()) {
             throw new WrongFormatException();
         } else {
             Matcher m = Pattern.compile("\\(([^\\(\\)]+)\\)").matcher(expression);
-            if(m.matches()){
+            if (m.matches()) {
                 parenthesis = true;
                 expression = m.group(1);
             }
@@ -78,17 +74,17 @@ public class TreeExpression implements ITreeExpression {
         Pattern varPattern = Pattern.compile("(\\((.*?)\\)|([a-zA-Z]+(_?[a-zA-Z1-9]+)*)|[1-9]+)([\\+-/\\^\\*])?");
         Matcher m = varPattern.matcher(expression);
         List<IVariable> variables = new LinkedList<>();
-        List<Operation> operations= new LinkedList<>();
-        while(m.find()){
+        List<Operation> operations = new LinkedList<>();
+        while (m.find()) {
             variables.add(new Variable(m.group(1)));
-            if(m.group(5)!= null && !m.group(5).equals("")) {
+            if (m.group(5) != null && !m.group(5).equals("")) {
                 operations.add(Operation.getOperation(m.group(5)));
             }
         }
         //System.out.println(variables.toString());
         //System.out.println(operations.toString());
 
-        if(variables.size() == 1){
+        if (variables.size() == 1) {
             return variables.get(0);
         }
 
@@ -96,35 +92,35 @@ public class TreeExpression implements ITreeExpression {
 
         IVariable var;
         Operation operation;
-        while(operations.size()>0){
+        while (operations.size() > 0) {
             operation = operations.remove(0);
             var = variables.remove(0);
-            if(operation.getPriority() < tree.getPriority()){
+            if (operation.getPriority() < tree.getPriority()) {
                 tree.setLastChild(new TreeExpression(operation, tree.getLastChild(), var));
             } else {
                 tree = new TreeExpression(operation, tree, var);
             }
         }
-        return parenthesis?tree.setParenthesis():tree;
+        return parenthesis ? tree.setParenthesis() : tree;
     }
 
-    public ITreeExpression addChild(IVariable child){
-        if(child instanceof ITreeExpression){
-            if(((ITreeExpression) child).getPriority() > getPriority() || !operation.isRightAssociativity()){
-                ((ITreeExpression)child).setParenthesis();
+    public ITreeExpression addChild(IVariable child) {
+        if (child instanceof ITreeExpression) {
+            if (((ITreeExpression) child).getPriority() > getPriority() || !operation.isRightAssociativity()) {
+                ((ITreeExpression) child).setParenthesis();
             }
             children.add(child);
             return this;
         }
-        children.add(child.isExpression()?parse(child.toString()):child);
+        children.add(child.isExpression() ? parse(child.toString()) : child);
         return this;
     }
 
     @Override
     public IVariable getLastChild() {
-        IVariable lastChild = children.get(children.size()-1);
-        if(lastChild instanceof ITreeExpression && !((ITreeExpression) lastChild).getParenthesis()){
-            return ((ITreeExpression)lastChild).getLastChild();
+        IVariable lastChild = children.get(children.size() - 1);
+        if (lastChild instanceof ITreeExpression && !((ITreeExpression) lastChild).getParenthesis()) {
+            return ((ITreeExpression) lastChild).getLastChild();
         } else {
             return lastChild;
         }
@@ -132,22 +128,22 @@ public class TreeExpression implements ITreeExpression {
 
     @Override
     public IVariable setLastChild(IVariable child) {
-        IVariable lastChild = children.get(children.size()-1);
-        if(lastChild instanceof ITreeExpression && !((ITreeExpression) lastChild).getParenthesis()){
-            return ((ITreeExpression)lastChild).setLastChild(child);
+        IVariable lastChild = children.get(children.size() - 1);
+        if (lastChild instanceof ITreeExpression && !((ITreeExpression) lastChild).getParenthesis()) {
+            return ((ITreeExpression) lastChild).setLastChild(child);
         } else {
-            return children.set(children.size()-1, child);
+            return children.set(children.size() - 1, child);
         }
     }
 
     @Override
-    public ITreeExpression setParenthesis(){
+    public ITreeExpression setParenthesis() {
         this.parenthesis = true;
         return this;
     }
 
     @Override
-    public Boolean getParenthesis(){
+    public Boolean getParenthesis() {
         return parenthesis;
     }
 
@@ -155,12 +151,12 @@ public class TreeExpression implements ITreeExpression {
     public ITreeExpression expand(Map<String, String> map) {
         for (int i = 0; i < children.size(); i++) {
             IVariable child = children.get(i);
-            if(child instanceof ITreeExpression){
+            if (child instanceof ITreeExpression) {
                 child.expand(map);
             } else {
-                if(map.containsKey(child.toString())){
+                if (map.containsKey(child.toString())) {
                     IVariable newChild = parse(map.get(child.toString()));
-                    if(newChild instanceof ITreeExpression){
+                    if (newChild instanceof ITreeExpression) {
                         ((ITreeExpression) newChild).setParenthesis();
                     }
                     children.set(i, newChild);
@@ -171,18 +167,18 @@ public class TreeExpression implements ITreeExpression {
     }
 
     @Override
-    public List<IVariable> getAllNodes(ITreeExpression expression) {
-        if (expression.getOperation() == Operation.POW) {
-            List<IVariable> nodes = new ArrayList<>();
-            for (int i = 0; i < Integer.valueOf(expression.getChildren().get(1).toString()); i++) {
-                nodes.add(expression.getChildren().get(0));
-            }
-            return nodes;
+    public List<IVariable> getAllNodes() {
+        if (operation == Operation.POW) {
+            final Integer exponent = Integer.valueOf(children.get(1).toString());
+            final IVariable base = children.get(0);
+            return Stream.generate(() -> base)
+                    .limit(exponent)
+                    .collect(Collectors.toList());
         }
         List<IVariable> nodes = new ArrayList<>();
-        for (IVariable variable : expression.getChildren()) {
+        for (IVariable variable : children) {
             if (variable.isExpression()) {
-                nodes.addAll(getAllNodes((ITreeExpression) variable));
+                nodes.addAll(((ITreeExpression) variable).getAllNodes());
             } else {
                 nodes.add(variable);
             }
@@ -191,13 +187,13 @@ public class TreeExpression implements ITreeExpression {
     }
 
     @Override
-    public Integer getPriority(){
+    public Integer getPriority() {
         return operation.getPriority();
     }
 
     @Override
-    public String toString(){
-        return parenthesis ?"("+Joiner.on(operation.getSign()).join(children)+")":Joiner.on(operation.getSign()).join(children);
+    public String toString() {
+        return parenthesis ? "(" + Joiner.on(operation.getSign()).join(children) + ")" : Joiner.on(operation.getSign()).join(children);
     }
 
     @Override
