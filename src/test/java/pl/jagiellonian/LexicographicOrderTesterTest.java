@@ -42,16 +42,13 @@ public class LexicographicOrderTesterTest {
                 {"x*y*x", "x*x*y", true},
                 {"2*y*1*x", "2*x*1*y", true},
                 {"6*z^3*1*x^4", "6*x^4*1*z^3", true},
+                {"x*x", "x^2", true},
+                {"x*(y*z)", "x*y*z", true},
 
                 // not equals
                 {"x", "y", false},
                 {"x*y", "x*z", false},
                 {"x*y*z", "x^2*y*z", false},
-
-                // not sure :)
-                {"x*x", "x^2", true},
-                {"x*(y*z)", "x*y*z", true},
-
                 {"x", "x*y", false},
         };
     }
