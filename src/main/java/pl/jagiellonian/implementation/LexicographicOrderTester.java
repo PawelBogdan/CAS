@@ -13,6 +13,12 @@ public class LexicographicOrderTester implements MonomialTester {
         this.sorter = sorter;
     }
 
+    /**
+     * @param var1 first {@link IVariable} or {@link ITreeExpression} to test
+     * @param var2 second {@link IVariable} or {@link ITreeExpression} to test
+     * @return true if both expressions are equals by lexicographic order; false if not or any given parameter
+     * is not an expression
+     */
     @Override
     public boolean test(IVariable var1, IVariable var2) {
         IVariable var1Sorted = sorter.sort(var1);

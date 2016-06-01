@@ -15,6 +15,10 @@ import static java.util.stream.Collectors.groupingBy;
  */
 public class LexicographicOrderSorter implements Sorter<IVariable> {
 
+    /**
+     * @param var - {@link IVariable} or {@link ITreeExpression} expression 
+     * @return {@link IVariable} or {@link ITreeExpression} sorted lexicographic
+     */
     public IVariable sort(IVariable var) {
         if (!var.isExpression()) {
             return var;
