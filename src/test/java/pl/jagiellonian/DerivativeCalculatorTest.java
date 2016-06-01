@@ -4,6 +4,7 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import pl.jagiellonian.exceptions.WrongDifferentiationVariable;
 import pl.jagiellonian.implementation.DerivativeCalculator;
 import pl.jagiellonian.implementation.LexicographicOrderSorter;
 import pl.jagiellonian.implementation.TreeExpression;
@@ -16,9 +17,16 @@ public class DerivativeCalculatorTest {
 
     private DerivativeCalculator derivativeCalculator = new DerivativeCalculator(new LexicographicOrderSorter());
 
+    @Test(expected = WrongDifferentiationVariable.class)
+    @Parameters({"2", "x^2"})
+    public void differentiationWithWrongVariableTest(String variable) {
+        IVariable monomial = TreeExpression.parse("x*y");
+        derivativeCalculator.differentiate(monomial, TreeExpression.parse(variable));
+    }
+
     @Test
     @Parameters(method = "getParameters")
-    public void sort(String monomialName, String variableName, String expectedResult) throws Exception {
+    public void differentiationTest(String monomialName, String variableName, String expectedResult) throws Exception {
         // given
         IVariable monomial = TreeExpression.parse(monomialName);
         IVariable variable = TreeExpression.parse(variableName);

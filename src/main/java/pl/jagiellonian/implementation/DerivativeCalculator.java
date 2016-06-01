@@ -2,7 +2,8 @@ package pl.jagiellonian.implementation;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.regex.Pattern;
+import pl.jagiellonian.exceptions.WrongDifferentiationVariable;
 import pl.jagiellonian.interfaces.ITreeExpression;
 import pl.jagiellonian.interfaces.IVariable;
 import pl.jagiellonian.interfaces.Sorter;
@@ -11,7 +12,7 @@ import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
 
 public class DerivativeCalculator {
-    Sorter<IVariable> sorter;
+    private Sorter<IVariable> sorter;
 
     public DerivativeCalculator(Sorter<IVariable> sorter) {
         this.sorter = sorter;
@@ -20,10 +21,12 @@ public class DerivativeCalculator {
     /**
      * @param monomial a monomial to differentiate
      * @param variable chosen variable to differentiate
-     *
      * @return {@link IVariable} or {@link ITreeExpression} derivative of monomial by variable
      */
     public IVariable differentiate(IVariable monomial, IVariable variable) {
+        if (variable.isExpression() || isNumber(variable)) {
+            throw new WrongDifferentiationVariable();
+        }
         if (!monomial.isExpression()) {
             if (variable.toString().equals(monomial.toString())) {
                 return new Variable("1");
@@ -51,5 +54,9 @@ public class DerivativeCalculator {
             result = result.mult(nodesPowered.get(i));
         }
         return result;
+    }
+
+    private boolean isNumber(IVariable variable) {
+        return Pattern.compile("\\d+").matcher(variable.toString()).matches();
     }
 }
