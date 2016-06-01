@@ -5,6 +5,7 @@ import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import pl.jagiellonian.implementation.DerivativeCalculator;
+import pl.jagiellonian.implementation.LexicographicOrderSorter;
 import pl.jagiellonian.implementation.TreeExpression;
 import pl.jagiellonian.interfaces.IVariable;
 
@@ -13,7 +14,7 @@ import static junit.framework.TestCase.assertEquals;
 @RunWith(JUnitParamsRunner.class)
 public class DerivativeCalculatorTest {
 
-    private DerivativeCalculator derivativeCalculator = new DerivativeCalculator();
+    private DerivativeCalculator derivativeCalculator = new DerivativeCalculator(new LexicographicOrderSorter());
 
     @Test
     @Parameters(method = "getParameters")

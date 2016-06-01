@@ -2,6 +2,7 @@ package pl.jagiellonian.implementation;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import pl.jagiellonian.interfaces.ITreeExpression;
 import pl.jagiellonian.interfaces.IVariable;
 import pl.jagiellonian.interfaces.Sorter;
@@ -10,8 +11,18 @@ import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
 
 public class DerivativeCalculator {
-    Sorter<IVariable> sorter = new LexicographicOrderSorter();
+    Sorter<IVariable> sorter;
 
+    public DerivativeCalculator(Sorter<IVariable> sorter) {
+        this.sorter = sorter;
+    }
+
+    /**
+     * @param monomial a monomial to differentiate
+     * @param variable chosen variable to differentiate
+     *
+     * @return {@link IVariable} or {@link ITreeExpression} derivative of monomial by variable
+     */
     public IVariable differentiate(IVariable monomial, IVariable variable) {
         if (!monomial.isExpression()) {
             if (variable.toString().equals(monomial.toString())) {
