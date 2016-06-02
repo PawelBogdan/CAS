@@ -5,7 +5,6 @@ import pl.jagiellonian.exceptions.WrongFormatException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 
 /**
  * Created by lukaszrzepka on 11.05.2016.
@@ -57,11 +56,11 @@ public class PolynomialAsMap {
         Matcher matcher = VARIABLE.matcher(variable);
         if (matcher.matches()) {
             int index = Integer.parseInt(matcher.group(1)) - 1;
-            OptionalInt max = polynomialMap.keySet().parallelStream()
+            int max = polynomialMap.keySet().parallelStream()
                     .filter(degreeList -> index < degreeList.size())
                     .mapToInt(degreeList -> degreeList.get(index))
-                    .max();
-            return max.isPresent() ? max.getAsInt() : 0;
+                    .max().orElse(0);
+            return max;
         }
         throw new WrongFormatException();
     }
@@ -77,14 +76,14 @@ public class PolynomialAsMap {
             }
         }
 
-        OptionalInt max = polynomialMap.keySet().parallelStream()
+        int max = polynomialMap.keySet().parallelStream()
                 .mapToInt(degreeList ->
                         indexes.parallelStream()
                                 .filter(index -> index < degreeList.size() && degreeList.get(index) > 0)
                                 .mapToInt(degreeList::get)
                                 .sum())
-                .max();
-        return max.isPresent() ? max.getAsInt() : 0;
+                .max().orElse(0);
+        return max;
     }
 
     @Override

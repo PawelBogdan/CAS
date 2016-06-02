@@ -6,7 +6,6 @@ import pl.jagiellonian.exceptions.WrongFormatException;
 
 import java.util.*;
 
-import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -62,24 +61,23 @@ public class PolynomialAsMapTest {
         assertEquals(6, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_1", "x_2", "x_3"))));
     }
 
-    @Test
-    public void degreeInvalidVariableTest() {
+    @Test(expected = WrongFormatException.class)
+    public void degreeLetterVariableTest() {
         //x_2x_3^2
         Map<List<Integer>, Integer> map = new HashMap<>();
         map.put(new ArrayList<>(Arrays.asList(0, 1, 2)), 3);
 
         PolynomialAsMap polynomialAsMap = new PolynomialAsMap(map);
-        try{
-            polynomialAsMap.degree("a");
-        }catch (WrongFormatException ignored){
-        }catch (Exception e){
-            fail("Should have thrown WrongFormatException");
-        }
-        try{
-            polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_2", "5" , "x_3")));
-        }catch (WrongFormatException ignored){
-        }catch (Exception e){
-            fail("Should have thrown WrongFormatException");
-        }
+        polynomialAsMap.degree("a");
+    }
+
+    @Test(expected = WrongFormatException.class)
+    public void degreeDigitAsVariableTest() {
+        //x_2x_3^2
+        Map<List<Integer>, Integer> map = new HashMap<>();
+        map.put(new ArrayList<>(Arrays.asList(5, 4, 2, 9)), -1);
+
+        PolynomialAsMap polynomialAsMap = new PolynomialAsMap(map);
+        polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_2", "5", "x_3")));
     }
 }
