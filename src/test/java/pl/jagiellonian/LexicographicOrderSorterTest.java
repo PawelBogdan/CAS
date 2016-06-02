@@ -16,7 +16,7 @@ import static junit.framework.TestCase.assertEquals;
 @RunWith(JUnitParamsRunner.class)
 public class LexicographicOrderSorterTest {
 
-    private LexicographicOrderSorter lexicographicOrderSorter = new LexicographicOrderSorter();
+    private final LexicographicOrderSorter lexicographicOrderSorter = new LexicographicOrderSorter();
 
     @Test
     @Parameters(method = "getExpressionBeforeAndAfterSorting")

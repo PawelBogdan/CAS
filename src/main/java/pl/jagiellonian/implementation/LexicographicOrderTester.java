@@ -7,9 +7,9 @@ import pl.jagiellonian.interfaces.Sorter;
 
 public class LexicographicOrderTester implements MonomialTester {
 
-    private Sorter<IVariable> sorter;
+    private final Sorter<IVariable> sorter;
 
-    public LexicographicOrderTester(Sorter sorter) {
+    public LexicographicOrderTester(Sorter<IVariable> sorter) {
         this.sorter = sorter;
     }
 

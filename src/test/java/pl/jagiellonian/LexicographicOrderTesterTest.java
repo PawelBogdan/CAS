@@ -14,7 +14,7 @@ import static junit.framework.TestCase.assertEquals;
 @RunWith(JUnitParamsRunner.class)
 public class LexicographicOrderTesterTest {
 
-    private LexicographicOrderTester tester = new LexicographicOrderTester(new LexicographicOrderSorter());
+    private final LexicographicOrderTester tester = new LexicographicOrderTester(new LexicographicOrderSorter());
 
     @Test
     @Parameters(method = "getExpressions")
