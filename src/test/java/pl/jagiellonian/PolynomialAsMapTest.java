@@ -48,30 +48,26 @@ public class PolynomialAsMapTest {
         Map<List<Integer>, Integer> polynomialMap = new HashMap<>();
         polynomialMap.put(new ArrayList<>(Arrays.asList(5, 1, 2)), -3);
         polynomialMap.put(new ArrayList<>(Arrays.asList(1, 4, 0, 2)), 3);
-        polynomialMap.put(new ArrayList<>(Arrays.asList(0, 0, 0)), 2);
+        polynomialMap.put(new ArrayList<>(Collections.emptyList()), 2);
         polynomialMap.put(new ArrayList<>(Arrays.asList(-4, 5, 0)), 1);
 
         PolynomialAsMap polynomialAsMap = new PolynomialAsMap(polynomialMap);
-        //{[5, 1, 2]=-3, [-4, 5, 0]=1, [1, 4, 0, 2]=3, [0, 0, 0]=2}
+        //{[5, 1, 2]=-3, [-4, 5, 0]=1, [1, 4, 0, 2]=3, []=2}
         assertEquals(4, polynomialAsMap.getPolynomialMap().size());
         polynomialAsMap.replaceExpression("x_1^5", "-2x_2^-1x_3^0");
-        //{[0, 0, 2]=6, [-4, 5, 0]=1, [1, 4, 0, 2]=3, [0, 0, 0]=2}
+        //{[0, 0, 2]=6, [-4, 5, 0]=1, [1, 4, 0, 2]=3, []=2}
         polynomialAsMap.replaceExpression("x_1^-4x_2^5", "x_3^2");
-        //{[0, 0, 2]=7, [1, 4, 0, 2]=3, [0, 0, 0]=2}
+        //{[0, 0, 2]=7, [1, 4, 0, 2]=3, []=2}
         polynomialAsMap.replaceExpression("x_1^1x_2^4", "-2x_4^2");
-        //{[0, 0, 2]=7, [0, 0, 0, 4]=-6, [0, 0, 0]=2}
+        //{[0, 0, 2]=7, [0, 0, 0, 4]=-6, []=2}
         polynomialAsMap.replaceExpression("x_3^2", "1");
-        //{[0, 0, 0, 4]=-6, [0, 0, 0]=9}
+        //{[0, 0, 0, 4]=-6, []=9}
         polynomialAsMap.replaceExpression("-6x_4^4", "-1");
-        //{[0, 0, 0, 0]=-1, [0, 0, 0]=9}
-        polynomialAsMap.replaceExpression("9", "1x_4^0");
+        //{[]=8}
+        polynomialAsMap.replaceExpression("8", "1x_4^0");
         assertEquals(1, polynomialAsMap.getPolynomialMap().size());
-        for (List<Integer> integers : polynomialAsMap.getPolynomialMap().keySet()) {
-            for (Integer integer : integers) {
-                assertEquals(0, integer.intValue());
-            }
-        }
-        assertEquals(0, polynomialAsMap.getPolynomialMap().get(new ArrayList<>(Collections.nCopies(4, 0))).intValue());
+        assertEquals(0, polynomialAsMap.getPolynomialMap().keySet().iterator().next().size());
+        assertEquals(1, polynomialAsMap.getPolynomialMap().get(new ArrayList<>(Collections.emptyList())).intValue());
     }
 
     @Test

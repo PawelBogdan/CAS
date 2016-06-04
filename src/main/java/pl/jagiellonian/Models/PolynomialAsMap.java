@@ -1,5 +1,6 @@
 package pl.jagiellonian.Models;
 
+import pl.jagiellonian.Parsers.ExpressionParser;
 import pl.jagiellonian.Parsers.ExpressionParser.ParsedExpression;
 import pl.jagiellonian.Parsers.MonomialParser;
 import pl.jagiellonian.exceptions.WrongFormatException;
@@ -46,8 +47,16 @@ public class PolynomialAsMap {
 
                 List<Integer> monomialPowersResult = new ArrayList<>();
 
-                for (int i = 0; i < thisMonomialPowers.size(); i++) {
-                    monomialPowersResult.add(thisMonomialPowers.get(i) + monomialPowers.get(i));
+                int i = 0;
+                for (; i < thisMonomialPowers.size(); i++) {
+                    if (monomialPowers.size() > i) {
+                        monomialPowersResult.add(thisMonomialPowers.get(i) + monomialPowers.get(i));
+                    } else {
+                        monomialPowersResult.add(thisMonomialPowers.get(i));
+                    }
+                }
+                for (; i < monomialPowers.size(); i++) {
+                    monomialPowersResult.add(monomialPowers.get(i));
                 }
 
                 Integer monomialResultCoefficient = thisMonomialCoefficient * monomialCoefficient;
@@ -58,60 +67,109 @@ public class PolynomialAsMap {
     }
 
     public PolynomialAsMap addPolynomial(PolynomialAsMap polynomialAsMap) {
-        Map<List<Integer>, Integer> polynomialMap = polynomialAsMap.getPolynomialMap();
-        Map<List<Integer>, Integer> polynomialResult = new HashMap<>();
-
-        //TODO
-
-        return new PolynomialAsMap(polynomialResult);
+        Map<List<Integer>, Integer> polynomialToAddMap = new HashMap<>(polynomialAsMap.getPolynomialMap());
+        for (List<Integer> integers : polynomialMap.keySet()) {
+            if (polynomialToAddMap.get(integers) != null) {
+                polynomialToAddMap.put(integers, polynomialToAddMap.get(integers) + polynomialMap.get(integers));
+            } else {
+                polynomialToAddMap.put(integers, polynomialMap.get(integers));
+            }
+        }
+        return new PolynomialAsMap(polynomialToAddMap);
     }
 
-    public void replaceExpression(String expressionToReplace, String replacementExpression) {
-        if (!isSingleExpression(expressionToReplace) || !isSingleExpression(replacementExpression)) {
+    public void replaceExpression(String expressionToReplace, String replacementExpressionString) {
+        if (!isSingleExpression(expressionToReplace)) {
             throw new WrongFormatException();
         }
         ParsedExpression parsedExpressionToReplace = parseExpression(expressionToReplace);
-        List<String> variables = findVariables(replacementExpression);
-        PolynomialAsMap replacement = new PolynomialAsMap(new MonomialParser().fromStringToMap(replacementExpression, variables));
+        List<String> variables = findVariables(replacementExpressionString);
+        ParsedExpression replacementExpression = parseExpression(replacementExpressionString);
+        PolynomialAsMap replacement = parsedExpressionToPolynomialAsMap(replacementExpression);
         Set<Integer> indexesToReplace = parsedExpressionToReplace.getVariables();
 
         List<PolynomialAsMap> fragments = new ArrayList<>();
         VariablePowers:
         for (List<Integer> variablePowers : polynomialMap.keySet()) {
             int initialConstant = polynomialMap.get(variablePowers);
-            int finalConstant;
+            int finalConstant = initialConstant;
             if (parsedExpressionToReplace.getConstant().isPresent()) {
                 finalConstant = initialConstant / parsedExpressionToReplace.getConstant().get();
             }
             int size = variablePowers.size();
             for (Integer index : indexesToReplace) {
                 if (index > size || variablePowers.get(index - 1) < parsedExpressionToReplace.getVariablePower(index)) {
-                    Map<List<Integer>, Integer> map = new HashMap<>();
-                    map.put(variablePowers, polynomialMap.get(variablePowers));
-                    fragments.add(new PolynomialAsMap(map));
+                    addNotModifiedFragment(fragments, variablePowers);
                     continue VariablePowers;
                 }
             }
 
-//            size = findMaximumVariableIndex(size, parsedReplacementExpression.getVariables());
-//            List<Integer> powers = new ArrayList<>(Collections.nCopies(size, 0));
-//            for (int i = 0; i < variablePowers.size(); i++) {
-//                if (!indexesToReplace.contains(i + 1)) {
-//                    powers.set(i, variablePowers.get(i));
-//                }
-//            }
-//            for (Integer index : indexesReplacement) {
-//                powers.set(index - 1, powers.get(index - 1) + parsedReplacementExpression.getVariablePower(index));
-//            }
-//
-//            int constant = parsedReplacementExpression.getConstant().isPresent() ?
-//                    parsedExpressionToReplace.getConstant().isPresent() ?
-//                            parsedReplacementExpression.getConstant().get() :
-//                            initialConstant * parsedReplacementExpression.getConstant().get() :
-//                    initialConstant;
-//            insertExpressionIntoMap(afterReplacement, powers, constant);
+            int matching = Integer.MAX_VALUE;
+            for (int i = 0; i < variablePowers.size(); i++) {
+                if (indexesToReplace.contains(i + 1)) {
+                    int power = variablePowers.get(i);
+                    int powerToReplace = parsedExpressionToReplace.getVariablePower(i + 1);
+                    if (powerToReplace > power) {
+                        addNotModifiedFragment(fragments, variablePowers);
+                        continue VariablePowers;
+                    }
+                    if (matching > power / powerToReplace) {
+                        matching = power / powerToReplace;
+                    }
+                }
+            }
+
+            int replacementDegree = replacement.degree(variables);
+            List<Integer> powers = new ArrayList<>(Collections.nCopies(size > replacementDegree ? size : replacementDegree, 0));
+            for (int i = 0; i < variablePowers.size(); i++) {
+                if (!indexesToReplace.contains(i + 1)) {
+                    powers.set(i, variablePowers.get(i));
+                } else {
+                    powers.set(i, variablePowers.get(i) - matching * parsedExpressionToReplace.getVariablePower(i + 1));
+                }
+            }
+            int end = powers.size();
+            for (int i = end - 1; i >= 0; i--) {
+                if (powers.get(i) == 0) {
+                    end--;
+                } else {
+                    break;
+                }
+            }
+            if (matching < Integer.MAX_VALUE) {
+                Map<List<Integer>, Integer> map = new HashMap<>();
+                map.put(powers.subList(0, end), finalConstant);
+                PolynomialAsMap multiplied = replacement.multipleWith(new PolynomialAsMap(map));
+                fragments.add(multiplied);
+            } else if (parsedExpressionToReplace.getConstant().isPresent()) {
+                Map<List<Integer>, Integer> map = new HashMap<>();
+                map.put(variablePowers, finalConstant);
+                fragments.add(new PolynomialAsMap(map));
+            }
         }
-//        setPolynomialMap(afterReplacement);
+        Map<List<Integer>, Integer> map = new HashMap<>();
+        PolynomialAsMap result = replacement.multipleWith(new PolynomialAsMap(map));
+        for (PolynomialAsMap polynomialAsMap : fragments) {
+            result = result.addPolynomial(polynomialAsMap);
+        }
+        setPolynomialMap(result.getPolynomialMap());
+    }
+
+    private PolynomialAsMap parsedExpressionToPolynomialAsMap(ParsedExpression replacementExpression) {
+        Map<List<Integer>, Integer> map = new HashMap<>();
+        int max = replacementExpression.getVariables().parallelStream().max(Integer::compareTo).orElse(0);
+        List<Integer> powers = new ArrayList<>(Collections.nCopies(max, 0));
+        for (Integer integer : replacementExpression.getVariables()) {
+            powers.set(integer - 1, replacementExpression.getVariablePower(integer));
+        }
+        map.put(powers, replacementExpression.getConstant().orElse(1));
+        return new PolynomialAsMap(map);
+    }
+
+    private void addNotModifiedFragment(List<PolynomialAsMap> fragments, List<Integer> variablePowers) {
+        Map<List<Integer>, Integer> map = new HashMap<>();
+        map.put(variablePowers, polynomialMap.get(variablePowers));
+        fragments.add(new PolynomialAsMap(map));
     }
 
     public List<String> findVariables(String replacementExpression) {
