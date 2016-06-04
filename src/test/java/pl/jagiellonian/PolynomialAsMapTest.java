@@ -80,6 +80,14 @@ public class PolynomialAsMapTest {
         //{[5, 1, 2]=-3, [1, 0, 0, 14]=48}
     }
 
+    @Test(expected = WrongFormatException.class)
+    public void substituteInvalidExpressionTest(){
+        String expression ="2x_2+b+c+9x_7";
+        Map<List<Integer>, Integer> polynomialMap = new HashMap<>();
+        PolynomialAsMap polynomialAsMap = new PolynomialAsMap(polynomialMap);
+        polynomialAsMap.substitute(expression, expression);
+    }
+
     @Test
     public void findVariablesTest() {
         List<String> variables = new PolynomialAsMap(null).findVariables("5x_3^1x_1x_876^56");
