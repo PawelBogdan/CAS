@@ -5,8 +5,6 @@ import pl.jagiellonian.Models.PolynomialAsMap;
 import pl.jagiellonian.exceptions.WrongFormatException;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 
@@ -43,7 +41,7 @@ public class PolynomialAsMapTest {
     }
 
     @Test
-    public void replaceExpressionTest() {
+    public void substituteTest() {
         //-3*x_1^5*x_2^1*x_3^2*x_4^0 + 9*x_1^1*x_2^4*x_3^0*x_4^2 + 2*x_1^0*x_2^0*x_3^0*x_4^0 + 1*x_1^-4*x_2^5*x_3^0*x_4^0
         Map<List<Integer>, Integer> polynomialMap = new HashMap<>();
         polynomialMap.put(new ArrayList<>(Arrays.asList(5, 1, 2)), -3);
@@ -54,20 +52,32 @@ public class PolynomialAsMapTest {
         PolynomialAsMap polynomialAsMap = new PolynomialAsMap(polynomialMap);
         //{[5, 1, 2]=-3, [-4, 5, 0]=1, [1, 4, 0, 2]=3, []=2}
         assertEquals(4, polynomialAsMap.getPolynomialMap().size());
-        polynomialAsMap.replaceExpression("x_1^5", "-2x_2^-1x_3^0");
+        polynomialAsMap.substitute("x_1^5", "-2x_2^-1x_3^0");
         //{[0, 0, 2]=6, [-4, 5, 0]=1, [1, 4, 0, 2]=3, []=2}
-        polynomialAsMap.replaceExpression("x_1^-4x_2^5", "x_3^2");
+        polynomialAsMap.substitute("x_1^-4x_2^5", "x_3^2");
         //{[0, 0, 2]=7, [1, 4, 0, 2]=3, []=2}
-        polynomialAsMap.replaceExpression("x_1^1x_2^4", "-2x_4^2");
+        polynomialAsMap.substitute("x_1^1x_2^4", "-2x_4^2");
         //{[0, 0, 2]=7, [0, 0, 0, 4]=-6, []=2}
-        polynomialAsMap.replaceExpression("x_3^2", "1");
+        polynomialAsMap.substitute("x_3^2", "1");
         //{[0, 0, 0, 4]=-6, []=9}
-        polynomialAsMap.replaceExpression("-6x_4^4", "-1");
+        polynomialAsMap.substitute("-6x_4^4", "-1");
         //{[]=8}
-        polynomialAsMap.replaceExpression("8", "1x_4^0");
+        polynomialAsMap.substitute("8", "1x_4^0");
+        //{[]=1}
         assertEquals(1, polynomialAsMap.getPolynomialMap().size());
         assertEquals(0, polynomialAsMap.getPolynomialMap().keySet().iterator().next().size());
         assertEquals(1, polynomialAsMap.getPolynomialMap().get(new ArrayList<>(Collections.emptyList())).intValue());
+    }
+
+    @Test
+    public void substituteComplexTest() {
+        Map<List<Integer>, Integer> polynomialMap = new HashMap<>();
+        polynomialMap.put(new ArrayList<>(Arrays.asList(5, 1, 2)), -3);
+        polynomialMap.put(new ArrayList<>(Arrays.asList(1, 4, 0, 2)), 3);
+        PolynomialAsMap polynomialAsMap = new PolynomialAsMap(polynomialMap);
+        //{[5, 1, 2]=-3, [1, 4, 0, 2]=3}
+        polynomialAsMap.substitute("x_2^2", "2x_4^3");
+        //{[5, 1, 2]=-3, [1, 0, 0, 14]=48}
     }
 
     @Test
