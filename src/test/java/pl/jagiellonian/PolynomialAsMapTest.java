@@ -2,6 +2,7 @@ package pl.jagiellonian;
 
 import org.junit.Test;
 import pl.jagiellonian.Models.PolynomialAsMap;
+import pl.jagiellonian.exceptions.WrongFormatException;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -80,5 +81,46 @@ public class PolynomialAsMapTest {
         assertEquals("x_3", variables.get(0));
         assertEquals("x_1", variables.get(1));
         assertEquals("x_876", variables.get(2));
+    }
+
+    @Test
+    public void degreeValidVariableTest() {
+        // 3x_2x_3^2+(-1)x_1^2x_3^4+(-1)x_1^3x_2^2
+        Map<List<Integer>, Integer> map = new HashMap<>();
+        map.put(new ArrayList<>(Arrays.asList(0, 1, 2)), 3);
+        map.put(new ArrayList<>(Arrays.asList(2, 0, 4)), -1);
+        map.put(new ArrayList<>(Arrays.asList(3, 2, 0)), -1);
+
+        PolynomialAsMap polynomialAsMap = new PolynomialAsMap(map);
+        assertEquals(3, polynomialAsMap.degree("x_1"));
+        assertEquals(2, polynomialAsMap.degree("x_2"));
+        assertEquals(4, polynomialAsMap.degree("x_3"));
+        assertEquals(0, polynomialAsMap.degree("x_5"));
+        assertEquals(0, polynomialAsMap.degree("x_91234"));
+        assertEquals(0, polynomialAsMap.degree(new ArrayList<>()));
+        assertEquals(5, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_1", "x_2"))));
+        assertEquals(4, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_2", "x_3"))));
+        assertEquals(6, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_1", "x_3"))));
+        assertEquals(6, polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_1", "x_2", "x_3"))));
+    }
+
+    @Test(expected = WrongFormatException.class)
+    public void degreeLetterVariableTest() {
+        //x_2x_3^2
+        Map<List<Integer>, Integer> map = new HashMap<>();
+        map.put(new ArrayList<>(Arrays.asList(0, 1, 2)), 3);
+
+        PolynomialAsMap polynomialAsMap = new PolynomialAsMap(map);
+        polynomialAsMap.degree("a");
+    }
+
+    @Test(expected = WrongFormatException.class)
+    public void degreeDigitAsVariableTest() {
+        //x_2x_3^2
+        Map<List<Integer>, Integer> map = new HashMap<>();
+        map.put(new ArrayList<>(Arrays.asList(5, 4, 2, 9)), -1);
+
+        PolynomialAsMap polynomialAsMap = new PolynomialAsMap(map);
+        polynomialAsMap.degree(new ArrayList<>(Arrays.asList("x_2", "5", "x_3")));
     }
 }

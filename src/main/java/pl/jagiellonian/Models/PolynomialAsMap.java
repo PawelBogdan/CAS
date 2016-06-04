@@ -1,6 +1,5 @@
 package pl.jagiellonian.Models;
 
-import com.google.common.annotations.VisibleForTesting;
 import pl.jagiellonian.Parsers.ExpressionParser.ParsedExpression;
 import pl.jagiellonian.Parsers.MonomialParser;
 import pl.jagiellonian.exceptions.WrongFormatException;
@@ -17,6 +16,8 @@ import static pl.jagiellonian.Parsers.ExpressionParser.parseExpression;
  */
 public class PolynomialAsMap {
     private static final Pattern VARIABLE_NAME = Pattern.compile("(x_[1-9][0-9]*)");
+    private static final Pattern VARIABLE = Pattern.compile("x_([1-9][0-9]*)");
+
     private Map<List<Integer>, Integer> polynomialMap;
 
     public PolynomialAsMap(Map<List<Integer>, Integer> polynomialMap) {
@@ -92,25 +93,25 @@ public class PolynomialAsMap {
                 }
             }
 
-            size = findMaximumVariableIndex(size, parsedReplacementExpression.getVariables());
-            List<Integer> powers = new ArrayList<>(Collections.nCopies(size, 0));
-            for (int i = 0; i < variablePowers.size(); i++) {
-                if (!indexesToReplace.contains(i + 1)) {
-                    powers.set(i, variablePowers.get(i));
-                }
-            }
-            for (Integer index : indexesReplacement) {
-                powers.set(index - 1, powers.get(index - 1) + parsedReplacementExpression.getVariablePower(index));
-            }
-
-            int constant = parsedReplacementExpression.getConstant().isPresent() ?
-                    parsedExpressionToReplace.getConstant().isPresent() ?
-                            parsedReplacementExpression.getConstant().get() :
-                            initialConstant * parsedReplacementExpression.getConstant().get() :
-                    initialConstant;
-            insertExpressionIntoMap(afterReplacement, powers, constant);
+//            size = findMaximumVariableIndex(size, parsedReplacementExpression.getVariables());
+//            List<Integer> powers = new ArrayList<>(Collections.nCopies(size, 0));
+//            for (int i = 0; i < variablePowers.size(); i++) {
+//                if (!indexesToReplace.contains(i + 1)) {
+//                    powers.set(i, variablePowers.get(i));
+//                }
+//            }
+//            for (Integer index : indexesReplacement) {
+//                powers.set(index - 1, powers.get(index - 1) + parsedReplacementExpression.getVariablePower(index));
+//            }
+//
+//            int constant = parsedReplacementExpression.getConstant().isPresent() ?
+//                    parsedExpressionToReplace.getConstant().isPresent() ?
+//                            parsedReplacementExpression.getConstant().get() :
+//                            initialConstant * parsedReplacementExpression.getConstant().get() :
+//                    initialConstant;
+//            insertExpressionIntoMap(afterReplacement, powers, constant);
         }
-        setPolynomialMap(afterReplacement);
+//        setPolynomialMap(afterReplacement);
     }
 
     public List<String> findVariables(String replacementExpression) {
@@ -125,6 +126,40 @@ public class PolynomialAsMap {
     private int findMaximumVariableIndex(int size, Set<Integer> variables) {
         OptionalInt max = variables.parallelStream().mapToInt(value -> value).max();
         return max.isPresent() ? max.getAsInt() > size ? max.getAsInt() : size : size;
+    }
+
+    public int degree(String variable) {
+        Matcher matcher = VARIABLE.matcher(variable);
+        if (matcher.matches()) {
+            int index = Integer.parseInt(matcher.group(1)) - 1;
+            int max = polynomialMap.keySet().parallelStream()
+                    .filter(degreeList -> index < degreeList.size())
+                    .mapToInt(degreeList -> degreeList.get(index))
+                    .max().orElse(0);
+            return max;
+        }
+        throw new WrongFormatException();
+    }
+
+    public int degree(List<String> variables) {
+        List<Integer> indexes = new ArrayList<>();
+        for (String variable : variables) {
+            Matcher matcher = VARIABLE.matcher(variable);
+            if (matcher.matches()) {
+                indexes.add(Integer.parseInt(matcher.group(1)) - 1);
+            } else {
+                throw new WrongFormatException();
+            }
+        }
+
+        int max = polynomialMap.keySet().parallelStream()
+                .mapToInt(degreeList ->
+                        indexes.parallelStream()
+                                .filter(index -> index < degreeList.size() && degreeList.get(index) > 0)
+                                .mapToInt(degreeList::get)
+                                .sum())
+                .max().orElse(0);
+        return max;
     }
 
     @Override
