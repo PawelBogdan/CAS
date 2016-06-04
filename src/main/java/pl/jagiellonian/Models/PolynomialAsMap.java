@@ -1,9 +1,13 @@
 package pl.jagiellonian.Models;
 
+import com.google.common.annotations.VisibleForTesting;
 import pl.jagiellonian.Parsers.ExpressionParser.ParsedExpression;
+import pl.jagiellonian.Parsers.MonomialParser;
 import pl.jagiellonian.exceptions.WrongFormatException;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static pl.jagiellonian.Parsers.ExpressionParser.isSingleExpression;
 import static pl.jagiellonian.Parsers.ExpressionParser.parseExpression;
@@ -12,7 +16,7 @@ import static pl.jagiellonian.Parsers.ExpressionParser.parseExpression;
  * Created by lukaszrzepka on 11.05.2016.
  */
 public class PolynomialAsMap {
-
+    private static final Pattern VARIABLE_NAME = Pattern.compile("(x_[1-9][0-9]*)");
     private Map<List<Integer>, Integer> polynomialMap;
 
     public PolynomialAsMap(Map<List<Integer>, Integer> polynomialMap) {
@@ -52,27 +56,38 @@ public class PolynomialAsMap {
         return new PolynomialAsMap(polynomialResult);
     }
 
+    public PolynomialAsMap addPolynomial(PolynomialAsMap polynomialAsMap) {
+        Map<List<Integer>, Integer> polynomialMap = polynomialAsMap.getPolynomialMap();
+        Map<List<Integer>, Integer> polynomialResult = new HashMap<>();
+
+        //TODO
+
+        return new PolynomialAsMap(polynomialResult);
+    }
+
     public void replaceExpression(String expressionToReplace, String replacementExpression) {
         if (!isSingleExpression(expressionToReplace) || !isSingleExpression(replacementExpression)) {
             throw new WrongFormatException();
         }
         ParsedExpression parsedExpressionToReplace = parseExpression(expressionToReplace);
-        ParsedExpression parsedReplacementExpression = parseExpression(replacementExpression);
+        List<String> variables = findVariables(replacementExpression);
+        PolynomialAsMap replacement = new PolynomialAsMap(new MonomialParser().fromStringToMap(replacementExpression, variables));
         Set<Integer> indexesToReplace = parsedExpressionToReplace.getVariables();
-        Set<Integer> indexesReplacement = parsedReplacementExpression.getVariables();
 
-        Map<List<Integer>, Integer> afterReplacement = new HashMap<>();
+        List<PolynomialAsMap> fragments = new ArrayList<>();
         VariablePowers:
         for (List<Integer> variablePowers : polynomialMap.keySet()) {
             int initialConstant = polynomialMap.get(variablePowers);
-            if (parsedExpressionToReplace.getConstant().isPresent() && !parsedExpressionToReplace.getConstant().get().equals(polynomialMap.get(variablePowers))) {
-                insertExpressionIntoMap(afterReplacement, variablePowers, initialConstant);
-                continue;
+            int finalConstant;
+            if (parsedExpressionToReplace.getConstant().isPresent()) {
+                finalConstant = initialConstant / parsedExpressionToReplace.getConstant().get();
             }
             int size = variablePowers.size();
             for (Integer index : indexesToReplace) {
-                if (index > size || variablePowers.get(index - 1) != parsedExpressionToReplace.getVariablePower(index)) {
-                    insertExpressionIntoMap(afterReplacement, variablePowers, initialConstant);
+                if (index > size || variablePowers.get(index - 1) < parsedExpressionToReplace.getVariablePower(index)) {
+                    Map<List<Integer>, Integer> map = new HashMap<>();
+                    map.put(variablePowers, polynomialMap.get(variablePowers));
+                    fragments.add(new PolynomialAsMap(map));
                     continue VariablePowers;
                 }
             }
@@ -98,13 +113,13 @@ public class PolynomialAsMap {
         setPolynomialMap(afterReplacement);
     }
 
-    private void insertExpressionIntoMap(Map<List<Integer>, Integer> resultMap, List<Integer> powers, int constant) {
-        if (resultMap.get(powers) != null) {
-            int existingConstant = resultMap.get(powers);
-            resultMap.put(powers, existingConstant + constant);
-        } else {
-            resultMap.put(powers, constant);
+    public List<String> findVariables(String replacementExpression) {
+        List<String> variables = new ArrayList<>();
+        Matcher matcher = VARIABLE_NAME.matcher(replacementExpression);
+        while (matcher.find()) {
+            variables.add(matcher.group(1));
         }
+        return variables;
     }
 
     private int findMaximumVariableIndex(int size, Set<Integer> variables) {

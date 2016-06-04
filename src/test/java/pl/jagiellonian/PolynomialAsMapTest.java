@@ -72,4 +72,13 @@ public class PolynomialAsMapTest {
         }
         assertEquals(0, polynomialAsMap.getPolynomialMap().get(new ArrayList<>(Collections.nCopies(4, 0))).intValue());
     }
+
+    @Test
+    public void findVariablesTest() {
+        List<String> variables = new PolynomialAsMap(null).findVariables("5x_3^1x_1x_876^56");
+        assertEquals(3, variables.size());
+        assertEquals("x_3", variables.get(0));
+        assertEquals("x_1", variables.get(1));
+        assertEquals("x_876", variables.get(2));
+    }
 }
