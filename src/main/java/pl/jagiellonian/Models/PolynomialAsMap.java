@@ -14,7 +14,7 @@ public class PolynomialAsMap {
 
     public PolynomialAsMap(Map<List<Integer>, Integer> polynomialMap) {
         this.polynomialMap = polynomialMap;
-        this.monomialOrder = MonomialOrder.LEXICOGRAPHIC;
+        this.monomialOrder = MonomialOrder.GRADED_LEXICOGRAPHIC;
     }
 
     public Map<List<Integer>, Integer> getPolynomialMap() {
@@ -61,10 +61,22 @@ public class PolynomialAsMap {
 
     @Override
     public String toString() {
-        final Comparator<List<Integer>> exponentsComparator = new Comparator<List<Integer>>() {
+        final Comparator<List<Integer>> lexicographicComparator = new Comparator<List<Integer>>() {
             @Override
             public int compare(List<Integer> o1, List<Integer> o2) {
                 int temp;
+                for (int i = 0; i < o1.size(); i++) {
+                    temp = Integer.compare(o1.get(i), o2.get(i));
+                    if (temp != 0) return -temp;
+                }
+                return 0;
+            }
+        };
+        final Comparator<List<Integer>> gradedComparator = new Comparator<List<Integer>>() {
+            @Override
+            public int compare(List<Integer> o1, List<Integer> o2) {
+                int temp = Integer.compare(o1.stream().mapToInt(Integer::intValue).sum(), o2.stream().mapToInt(Integer::intValue).sum());
+                if (temp != 0) return -temp;
                 for (int i = 0; i < o1.size(); i++) {
                     temp = Integer.compare(o1.get(i), o2.get(i));
                     if (temp != 0) return -temp;
@@ -77,12 +89,15 @@ public class PolynomialAsMap {
         switch (monomialOrder) {
             case LEXICOGRAPHIC:
                 output = polynomialMap.entrySet().stream()
-                            .sorted((o1, o2) -> exponentsComparator.compare(o1.getKey(), o2.getKey()))
+                            .sorted((o1, o2) -> lexicographicComparator.compare(o1.getKey(), o2.getKey()))
                             .map(PolynomialAsMap::getMonomialFromEntry)
                             .collect(Collectors.joining(" "));
                 break;
             case GRADED_LEXICOGRAPHIC:
-
+                output = polynomialMap.entrySet().stream()
+                        .sorted((o1, o2) -> gradedComparator.compare(o1.getKey(), o2.getKey()))
+                        .map(PolynomialAsMap::getMonomialFromEntry)
+                        .collect(Collectors.joining(" "));
                 break;
         }
         return output.startsWith("+ ") ? output.substring(2) : output;
