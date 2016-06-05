@@ -1,5 +1,7 @@
 package pl.jagiellonian.Models;
 
+import pl.jagiellonian.utils.MonomialOrder;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.Map;
  */
 public class PolynomialAsMap {
     private Map<List<Integer>, Integer> polynomialMap;
+    private MonomialOrder monomialOrder = MonomialOrder.GRADED_LEXICOGRAPHIC;
 
     public PolynomialAsMap(Map<List<Integer>, Integer> polynomialMap) {
         this.polynomialMap = polynomialMap;
@@ -21,6 +24,14 @@ public class PolynomialAsMap {
 
     public void setPolynomialMap(Map<List<Integer>, Integer> polynomialMap) {
         this.polynomialMap = polynomialMap;
+    }
+
+    /**
+     * Sets the monomial order to be applied in {@link #toString()} method.
+     * Default is {@link MonomialOrder#GRADED_LEXICOGRAPHIC}.
+     */
+    public void setMonomialOrder(MonomialOrder monomialOrder) {
+        this.monomialOrder = monomialOrder;
     }
 
     public PolynomialAsMap multipleWith(PolynomialAsMap myPolynomial) {
@@ -51,7 +62,13 @@ public class PolynomialAsMap {
 
     @Override
     public String toString() {
-        //TODO
-        return polynomialMap.toString();
+        switch (monomialOrder) {
+            case LEXICOGRAPHIC:
+                return "";
+
+            case GRADED_LEXICOGRAPHIC:
+            default:
+                return "";
+        }
     }
 }
