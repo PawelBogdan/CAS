@@ -12,11 +12,11 @@ public class SingleExpressionPowers {
         return powers.get(variable);
     }
 
-    public Set<Map.Entry<VariableInMap, Integer>> getPowersSet(){
+    public Set<Map.Entry<VariableInMap, Integer>> getPowersSet() {
         return powers.entrySet();
     }
 
-    public Set<VariableInMap> getVariables(){
+    public Set<VariableInMap> getVariables() {
         return powers.keySet();
     }
 

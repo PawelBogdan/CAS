@@ -2,14 +2,14 @@ package pl.jagiellonian.model;
 
 public class SingleExpression {
     private final SingleExpressionPowers powers;
-    private final Integer constant;
+    private final Double constant;
 
     public SingleExpression(SingleExpressionPowers powers) {
         this.powers = powers;
         constant = null;
     }
 
-    public SingleExpression(SingleExpressionPowers powers, int constant) {
+    public SingleExpression(SingleExpressionPowers powers, double constant) {
         this.powers = powers;
         this.constant = constant;
     }
@@ -22,7 +22,7 @@ public class SingleExpression {
         return constant != null;
     }
 
-    public int getConstant() {
+    public double getConstant() {
         return constant != null ? constant : 1;
     }
 
@@ -38,13 +38,17 @@ public class SingleExpression {
     @Override
     public int hashCode() {
         int result = powers.hashCode();
-        result = 31 * result + (constant != null ? constant : 1);
+        result = (31 * result + (int) (constant != null ? constant*100 : 1));
         return result;
     }
 
     @Override
     public String toString() {
         String powersString = powers.toString();
-        return powersString.length() > 0 ? constant + "*" + powersString : constant + "";
+        return powersString.length() > 0 ?
+                constant != null ?
+                        constant + "*" + powersString :
+                        powersString :
+                constant != null ? constant + "" : "";
     }
 }

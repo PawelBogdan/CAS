@@ -15,13 +15,13 @@ import static java.lang.String.format;
 public class PolynomialAsListOfMaps {
     private final static String CONSTANT = "(?:\\(?(-?[1-9][0-9]*)\\)?\\*?)?";
     private final static Pattern CONSTANT_IN_EXPRESSION = Pattern.compile(CONSTANT + "(.*)");
-    private final static String VARIABLE = "(?:([a-zA-Z]+_?[0-9]*)(?:\\^(-?[0-9]+))?)";
+    private final static String VARIABLE = "\\*?(?:([a-zA-Z]+_?[0-9]*)(?:\\^(-?[0-9]+))?)";
     private final static Pattern VARIABLE_IN_EXPRESSION = Pattern.compile(VARIABLE);
     private final static String VARIABLES = format("%s(?:\\*%s)*", VARIABLE, VARIABLE);
     private final static Pattern VALID_EXPRESSION = Pattern.compile(format("(%s{1}(?:%s)*|(?:%s)+)(?:\\+(%s{1}(?:%s)*|(?:%s)+))*", CONSTANT, VARIABLES, VARIABLES, CONSTANT, VARIABLES, VARIABLES));
     private final static Pattern SINGLE_EXPRESSION = Pattern.compile(format("(%s{1}(?:%s)*|(?:%s)+)", CONSTANT, VARIABLES, VARIABLES));
 
-    private List<SingleExpression> expressions = new ArrayList<>();
+    protected List<SingleExpression> expressions = new ArrayList<>();
 
     public PolynomialAsListOfMaps() {
     }
@@ -71,9 +71,9 @@ public class PolynomialAsListOfMaps {
                 .collect(Collectors.toSet());
         List<SingleExpression> expressions = new ArrayList<>();
         for (SingleExpressionPowers power : powers) {
-            int constant = expressions.parallelStream()
+            double constant = this.expressions.parallelStream()
                     .filter(singleExpression -> singleExpression.getPowers().equals(power))
-                    .mapToInt(SingleExpression::getConstant)
+                    .mapToDouble(SingleExpression::getConstant)
                     .sum();
             if (constant != 0) {
                 expressions.add(new SingleExpression(power, constant));
@@ -175,7 +175,7 @@ public class PolynomialAsListOfMaps {
                     continue VariablePowers;
                 } else {
                     int matching = expressionPowers.getPower(entry.getKey()) / entry.getValue();
-                    if (matching > matchPower) {
+                    if (matching < matchPower) {
                         matchPower = matching;
                     }
                 }
@@ -198,7 +198,7 @@ public class PolynomialAsListOfMaps {
                 }
                 PolynomialAsListOfMaps fragment = new PolynomialAsListOfMaps();
                 if (replacement.getExpressions().get(0).isConstantPresent()) {
-                    int replacementConstant = replacement.getExpressions().get(0).getConstant();
+                    double replacementConstant = replacement.getExpressions().get(0).getConstant();
                     fragment.expressions.add(new SingleExpression(newPowers, (expression.getConstant() - replacementConstant) / replacementConstant));
                 }else{
                     fragment.expressions.add(new SingleExpression(newPowers, expression.getConstant()));
