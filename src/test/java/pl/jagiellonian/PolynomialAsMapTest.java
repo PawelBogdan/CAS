@@ -33,7 +33,7 @@ public class PolynomialAsMapTest {
 
         // (-(b c^2) + 4 (a c^3) - 3 c^2) * (3 (b c) - a^2 b^2)
         PolynomialAsMap polynomialAsMap2 = polynomialMap1.multipleWith(new PolynomialAsMap(polynomial2));
-        assertEquals("{[0, 2, 3]=-3, [2, 3, 2]=1, [0, 1, 3]=-9, [2, 2, 2]=3, [1, 1, 4]=12, [3, 2, 3]=-4}", polynomialAsMap2.toString());
+        assertEquals("{[0, 2, 3]=-3, [2, 3, 2]=1, [0, 1, 3]=-9, [2, 2, 2]=3, [1, 1, 4]=12, [3, 2, 3]=-4}", polynomialAsMap2.getPolynomialMap().toString());
         System.out.println(polynomialAsMap2);
         //-4 a^3 b^2 c^3   +   a^2 b^3 c^2   +   3 a^2 b^2 c^2   +   12 a b c^4   -   3 b^2 c^3   -   9 b c^3
     }
