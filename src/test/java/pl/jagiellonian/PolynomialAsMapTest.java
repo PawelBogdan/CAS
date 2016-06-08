@@ -37,4 +37,26 @@ public class PolynomialAsMapTest {
         System.out.println(polynomialAsMap2);
         //-4 a^3 b^2 c^3   +   a^2 b^3 c^2   +   3 a^2 b^2 c^2   +   12 a b c^4   -   3 b^2 c^3   -   9 b c^3
     }
+
+    @Test
+    public void toStringTest() {
+        // -(b c^2) + 4 (a c^3) - 3 c^2
+        Map<List<Integer>, Integer> polynomial1 = new HashMap<>();
+        polynomial1.put(new ArrayList<>(Arrays.asList(0,1,2)), -1);
+        polynomial1.put(new ArrayList<>(Arrays.asList(1,0,3)), 4);
+        polynomial1.put(new ArrayList<>(Arrays.asList(0,0,2)), -3);
+
+        PolynomialAsMap polynomialMap1 = new PolynomialAsMap(polynomial1);
+        assertEquals("-x_2*x_3^2-3*x_3^2+4*x_1*x_3^3", polynomialMap1.toString());
+        System.out.println(polynomialMap1.toString());
+
+        // 3 (b c) - a^2 b^2
+        Map<List<Integer>, Integer> polynomial2 = new HashMap<>();
+        polynomial2.put(new ArrayList<>(Arrays.asList(0,1,1)), 3);
+        polynomial2.put(new ArrayList<>(Arrays.asList(2,2,0)), -1);
+
+        PolynomialAsMap polynomialMap2 = new PolynomialAsMap(polynomial2);
+        assertEquals("3*x_2*x_3-x_1^2*x_2^2", polynomialMap2.toString());
+        System.out.println(polynomialMap2.toString());
+    }
 }
