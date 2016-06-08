@@ -6,6 +6,7 @@ import pl.jagiellonian.interfaces.ITreeExpression;
 import pl.jagiellonian.interfaces.IVariable;
 import pl.jagiellonian.utils.Operation;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -142,40 +143,42 @@ public class TreeExpression implements ITreeExpression {
 
     @Override
     public int degree(IVariable variable) {
-        return recursionDegree(variable, this, 0);
+        List<IVariable> list = new ArrayList<>();
+        list.add(variable);
+        return recursionDegree(list, this, 0);
     }
 
-    private int recursionDegree(IVariable search, IVariable variable, int degree) {
+    private int recursionDegree(List<IVariable> search, IVariable variable, int degree) {
         if (variable.isExpression()) {
             TreeExpression treeExpression = (TreeExpression) variable;
             switch (treeExpression.getOperation()) {
                 case ADD:
                 case SUB:
-                    return Math.max(recursionDegree(search, getFirstChild(), degree),
-                            recursionDegree(search, getLastChild(), degree));
+                    return Math.max(recursionDegree(search, treeExpression.getFirstChild(), degree),
+                            recursionDegree(search, treeExpression.getChildren().get(1), degree));
                 case DIV:
-                    return recursionDegree(search, getFirstChild(), degree)
-                            - recursionDegree(search, getLastChild(), degree);
+                    return recursionDegree(search, treeExpression.getFirstChild(), degree)
+                            - recursionDegree(search, treeExpression.getChildren().get(1), degree);
                 case MULT:
-                    return recursionDegree(search, getFirstChild(), degree)
-                            + recursionDegree(search, getLastChild(), degree);
+                    return recursionDegree(search, treeExpression.getFirstChild(), degree)
+                            + recursionDegree(search, treeExpression.getChildren().get(1), degree);
                 case POW:
-                    if (getLastChild().isExpression()) {
+                    if (treeExpression.getChildren().get(1).isExpression()) {
                         throw new WrongFormatException();
                     }
-                    if (getFirstChild().isExpression()) {
-                        return recursionDegree(search, getFirstChild(), degree)
-                                * Integer.valueOf(getLastChild().getName());
+                    if (treeExpression.getFirstChild().isExpression()) {
+                        return recursionDegree(search, treeExpression.getFirstChild(), degree)
+                                * Integer.valueOf(treeExpression.getChildren().get(1).getName());
                     } else {
-                        if (getFirstChild().equals(search)) {
-                            return Integer.valueOf(getLastChild().getName());
+                        if (search.contains(treeExpression.getFirstChild())) {
+                            return Integer.valueOf(treeExpression.getChildren().get(1).getName());
                         } else {
                             return 0;
                         }
                     }
             }
         } else {
-            if (getFirstChild().equals(search)) {
+            if (search.contains(variable)) {
                 return 1;
             } else {
                 return 0;
@@ -191,7 +194,7 @@ public class TreeExpression implements ITreeExpression {
 
     @Override
     public int degree(List<IVariable> variables) {
-        return 0;
+        return recursionDegree(variables, this, 0);
     }
 
     public List<IVariable> getChildren() {
