@@ -18,4 +18,7 @@ public interface IVariable{
     ITreeExpression mult(String variable);
     ITreeExpression div(String variable);
     ITreeExpression pow(String variable);
+
+
+    String getName();
 }

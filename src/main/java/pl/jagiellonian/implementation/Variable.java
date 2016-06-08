@@ -84,4 +84,16 @@ public class Variable implements IVariable{
     public ITreeExpression pow(String variable) {
         return new TreeExpression(POW, this).addChild(new Variable(variable));
     }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Variable v = (Variable) obj;
+        return name.equals(v.name);
+    }
+
 }
