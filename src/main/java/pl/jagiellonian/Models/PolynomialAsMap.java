@@ -74,7 +74,12 @@ public class PolynomialAsMap {
         return new PolynomialAsMap(polynomialToAddMap);
     }
 
-
+    /**
+     * Method for replacing single expression in polynomial.
+     * @param polynomialToReplace Single expression to replace as PolynomialAsMap object
+     * @param polynomialReplacement PolynomialAsMap object to insert instead of replaced expression
+     * @throws WrongFormatException When PolynomialAsMap to replace is more then single expression
+     */
     public void substitute(PolynomialAsMap polynomialToReplace, PolynomialAsMap polynomialReplacement) {
         if (polynomialToReplace.polynomialMap.size() != 1) {
             throw new WrongFormatException();
