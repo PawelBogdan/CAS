@@ -35,8 +35,8 @@ public class SingleExpressionTest {
     public void testGetConstant() throws Exception {
         SingleExpressionPowers powers = new SingleExpressionPowers();
         SingleExpression expression = new SingleExpression(powers);
-        assertEquals(1, expression.getConstant());
-        assertEquals(3, singleExpression.getConstant());
+        assertEquals(1., expression.getConstant(), 0);
+        assertEquals(3., singleExpression.getConstant(), 0);
     }
 
     @Test
@@ -58,6 +58,6 @@ public class SingleExpressionTest {
 
     @Test
     public void testToString() throws Exception {
-        assertEquals("3*example^-5", singleExpression.toString());
+        assertEquals("3.0*example^-5", singleExpression.toString());
     }
 }

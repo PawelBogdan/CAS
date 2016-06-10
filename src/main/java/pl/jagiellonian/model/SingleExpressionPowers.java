@@ -24,6 +24,10 @@ public class SingleExpressionPowers {
         powers.put(variable, power);
     }
 
+    public void putPower(Map.Entry<VariableInMap, Integer> entry){
+        powers.put(entry.getKey(), entry.getValue());
+    }
+
     public void addPower(VariableInMap variable, Integer power) {
         Integer variablePower = powers.get(variable);
         if (variablePower != null) {
@@ -31,6 +35,10 @@ public class SingleExpressionPowers {
         } else {
             powers.put(variable, power);
         }
+    }
+
+    public void addPower(Map.Entry<VariableInMap, Integer> entry){
+        addPower(entry.getKey(), entry.getValue());
     }
 
     @Override

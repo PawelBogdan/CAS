@@ -23,7 +23,15 @@ public class PolynomialAsListOfMaps {
 
     protected List<SingleExpression> expressions = new ArrayList<>();
 
-    public PolynomialAsListOfMaps() {
+    private PolynomialAsListOfMaps() {
+    }
+
+    private PolynomialAsListOfMaps(SingleExpression expressions) {
+        this.expressions.add(expressions);
+    }
+
+    private PolynomialAsListOfMaps(List<SingleExpression> expressions) {
+        this.expressions = expressions;
     }
 
     public List<SingleExpression> getExpressions() {
@@ -117,8 +125,8 @@ public class PolynomialAsListOfMaps {
 
     private static SingleExpression multipleExpressions(SingleExpression first, SingleExpression second) {
         SingleExpressionPowers result = new SingleExpressionPowers();
-        first.getPowers().getPowersSet().stream().forEach(entry -> result.putPower(entry.getKey(), entry.getValue()));
-        second.getPowers().getPowersSet().stream().forEach(entry -> result.addPower(entry.getKey(), entry.getValue()));
+        first.getPowers().getPowersSet().stream().forEach(result::putPower);
+        second.getPowers().getPowersSet().stream().forEach(result::addPower);
         return new SingleExpression(result, first.getConstant() * second.getConstant());
     }
 
@@ -152,14 +160,12 @@ public class PolynomialAsListOfMaps {
                 }).max().orElse(0);
     }
 
-    @SuppressWarnings("ConstantConditions")
-    public void substitute(String expressionToReplace, String replacementExpressionString) {
-        if (!SINGLE_EXPRESSION.matcher(expressionToReplace).matches()) {
+    public void substitute(PolynomialAsListOfMaps polynomialToReplace, PolynomialAsListOfMaps replacementPolynomial) {
+        if (polynomialToReplace.getExpressions().size() != 1) {
             throw new WrongFormatException();
         }
-        PolynomialAsListOfMaps replacement = PolynomialAsListOfMaps.parse(replacementExpressionString);
-        SingleExpression toReplacement = parseSingleExpression(expressionToReplace);
-        SingleExpressionPowers powers = toReplacement.getPowers();
+        SingleExpression singleExpression = polynomialToReplace.getExpressions().get(0);
+        SingleExpressionPowers powersToReplace = singleExpression.getPowers();
 
         List<PolynomialAsListOfMaps> fragments = new ArrayList<>();
         VariablePowers:
@@ -167,11 +173,9 @@ public class PolynomialAsListOfMaps {
             SingleExpressionPowers expressionPowers = expression.getPowers();
             int matchPower = Integer.MAX_VALUE;
 
-            for (Map.Entry<VariableInMap, Integer> entry : powers.getPowersSet()) {
+            for (Map.Entry<VariableInMap, Integer> entry : powersToReplace.getPowersSet()) {
                 if (expressionPowers.getPower(entry.getKey()) == null || expressionPowers.getPower(entry.getKey()) < entry.getValue()) {
-                    PolynomialAsListOfMaps fragment = new PolynomialAsListOfMaps();
-                    fragment.expressions.add(expression);
-                    fragments.add(fragment);
+                    fragments.add(new PolynomialAsListOfMaps(expression));
                     continue VariablePowers;
                 } else {
                     int matching = expressionPowers.getPower(entry.getKey()) / entry.getValue();
@@ -181,14 +185,11 @@ public class PolynomialAsListOfMaps {
                 }
             }
 
-            if (matchPower != Integer.MAX_VALUE) {
-                for (int i = 1; i < matchPower; i++) {
-                    replacement.multiple(replacement);
-                }
+            if (matchPower != Integer.MAX_VALUE && expression.getConstant() - matchPower * singleExpression.getConstant() != 0) {
                 SingleExpressionPowers newPowers = new SingleExpressionPowers();
                 for (Map.Entry<VariableInMap, Integer> entry : expressionPowers.getPowersSet()) {
-                    if (powers.getPower(entry.getKey()) != null) {
-                        int power = entry.getValue() - matchPower * powers.getPower(entry.getKey());
+                    if (powersToReplace.getPower(entry.getKey()) != null) {
+                        int power = entry.getValue() - matchPower * powersToReplace.getPower(entry.getKey());
                         if (power != 0) {
                             newPowers.putPower(entry.getKey(), power);
                         }
@@ -196,19 +197,19 @@ public class PolynomialAsListOfMaps {
                         newPowers.putPower(entry.getKey(), entry.getValue());
                     }
                 }
-                PolynomialAsListOfMaps fragment = new PolynomialAsListOfMaps();
-                if (replacement.getExpressions().get(0).isConstantPresent()) {
-                    double replacementConstant = replacement.getExpressions().get(0).getConstant();
-                    fragment.expressions.add(new SingleExpression(newPowers, (expression.getConstant() - replacementConstant) / replacementConstant));
-                }else{
-                    fragment.expressions.add(new SingleExpression(newPowers, expression.getConstant()));
+
+                for (int i = 1; i < matchPower; i++) {
+                    replacementPolynomial.multiple(replacementPolynomial);
                 }
-                fragment.multiple(replacement);
-                fragments.add(fragment);
+
+                PolynomialAsListOfMaps afterMultiplying = multiple(
+                        new PolynomialAsListOfMaps(new SingleExpression(newPowers, expression.getConstant() - matchPower * singleExpression.getConstant())),
+                        replacementPolynomial);
+                fragments.add(afterMultiplying);
             } else {
-                PolynomialAsListOfMaps fragment = new PolynomialAsListOfMaps();
-                fragment.expressions.add(new SingleExpression(expressionPowers, toReplacement.getConstant()));
-                fragments.add(fragment);
+                fragments.add(multiple(
+                        new PolynomialAsListOfMaps(new SingleExpression(expression.getPowers(), expression.getConstant() - singleExpression.getConstant())),
+                        replacementPolynomial));
             }
         }
         PolynomialAsListOfMaps result = new PolynomialAsListOfMaps();
