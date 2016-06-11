@@ -32,13 +32,13 @@ public class SingleExpression {
         if (!(o instanceof SingleExpression)) return false;
 
         SingleExpression that = (SingleExpression) o;
-        return powers.equals(that.powers) && constant == that.constant;
+        return powers.equals(that.powers) && getConstant() == that.getConstant();
     }
 
     @Override
     public int hashCode() {
         int result = powers.hashCode();
-        result = (31 * result + (int) (constant != null ? constant*100 : 1));
+        result = (31 * result + (int) (constant != null ? constant * 100 : 1));
         return result;
     }
 
@@ -47,8 +47,8 @@ public class SingleExpression {
         String powersString = powers.toString();
         return powersString.length() > 0 ?
                 constant != null ?
-                        constant + "*" + powersString :
+                        Math.round(constant * 100) / 100. + "*" + powersString :
                         powersString :
-                constant != null ? constant + "" : "";
+                constant != null ? Math.round(constant * 100) / 100. + "" : "";
     }
 }

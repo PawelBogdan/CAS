@@ -13,13 +13,12 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 
 public class PolynomialAsListOfMaps {
-    private final static String CONSTANT = "(?:\\(?(-?[1-9][0-9]*)\\)?\\*?)?";
-    private final static Pattern CONSTANT_IN_EXPRESSION = Pattern.compile(CONSTANT + "(.*)");
+    private final static String CONSTANT = "\\(?(-?[1-9][0-9]*)\\)?\\*?";
+    private final static Pattern CONSTANT_IN_EXPRESSION = Pattern.compile("(?:" + CONSTANT + ")?" + "(.*)");
     private final static String VARIABLE = "\\*?(?:([a-zA-Z]+_?[0-9]*)(?:\\^(-?[0-9]+))?)";
     private final static Pattern VARIABLE_IN_EXPRESSION = Pattern.compile(VARIABLE);
     private final static String VARIABLES = format("%s(?:\\*%s)*", VARIABLE, VARIABLE);
     private final static Pattern VALID_EXPRESSION = Pattern.compile(format("(%s{1}(?:%s)*|(?:%s)+)(?:\\+(%s{1}(?:%s)*|(?:%s)+))*", CONSTANT, VARIABLES, VARIABLES, CONSTANT, VARIABLES, VARIABLES));
-    private final static Pattern SINGLE_EXPRESSION = Pattern.compile(format("(%s{1}(?:%s)*|(?:%s)+)", CONSTANT, VARIABLES, VARIABLES));
 
     protected List<SingleExpression> expressions = new ArrayList<>();
 
@@ -30,12 +29,16 @@ public class PolynomialAsListOfMaps {
         this.expressions.add(expressions);
     }
 
-    private PolynomialAsListOfMaps(List<SingleExpression> expressions) {
-        this.expressions = expressions;
+    public PolynomialAsListOfMaps(List<SingleExpression> expressions) {
+        this.expressions = new ArrayList<>(expressions);
+    }
+
+    public int size() {
+        return expressions.size();
     }
 
     public List<SingleExpression> getExpressions() {
-        return expressions;
+        return new ArrayList<>(expressions);
     }
 
     public static PolynomialAsListOfMaps parse(String expression) {
@@ -58,19 +61,18 @@ public class PolynomialAsListOfMaps {
 
     private static SingleExpression parseSingleExpression(String singleExpressionString) {
         Matcher constantMatcher = CONSTANT_IN_EXPRESSION.matcher(singleExpressionString);
-        if (constantMatcher.matches()) {
-            String constant = constantMatcher.group(1);
-            Matcher variableMatcher = VARIABLE_IN_EXPRESSION.matcher(constantMatcher.group(2));
-            SingleExpressionPowers singleExpressionPowers = new SingleExpressionPowers();
-            while (variableMatcher.find()) {
-                String power = variableMatcher.group(2);
-                singleExpressionPowers.addPower(new VariableInMap(variableMatcher.group(1)), power != null ? Integer.parseInt(power) : 1);
-            }
-            return constant != null ?
-                    new SingleExpression(singleExpressionPowers, Integer.parseInt(constant)) :
-                    new SingleExpression(singleExpressionPowers);
+        constantMatcher.matches();
+        String constant = constantMatcher.group(1);
+        Matcher variableMatcher = VARIABLE_IN_EXPRESSION.matcher(constantMatcher.group(2));
+        SingleExpressionPowers singleExpressionPowers = new SingleExpressionPowers();
+        while (variableMatcher.find()) {
+            String power = variableMatcher.group(2);
+            singleExpressionPowers.addPower(new VariableInMap(variableMatcher.group(1)), power != null ? Integer.parseInt(power) : 1);
         }
-        return null;
+        return constant != null ?
+                new SingleExpression(singleExpressionPowers, Integer.parseInt(constant)) :
+                new SingleExpression(singleExpressionPowers);
+
     }
 
     private void simplifyExpressions() {
@@ -97,8 +99,8 @@ public class PolynomialAsListOfMaps {
 
     public static PolynomialAsListOfMaps add(PolynomialAsListOfMaps first, PolynomialAsListOfMaps second) {
         List<SingleExpression> expressions = new ArrayList<>();
-        expressions.addAll(first.expressions);
-        expressions.addAll(second.expressions);
+        expressions.addAll(first.getExpressions());
+        expressions.addAll(second.getExpressions());
         PolynomialAsListOfMaps result = new PolynomialAsListOfMaps();
         result.expressions = expressions;
         result.simplifyExpressions();
@@ -110,7 +112,7 @@ public class PolynomialAsListOfMaps {
     }
 
     @SuppressWarnings("Convert2streamapi")
-    private static PolynomialAsListOfMaps multiple(PolynomialAsListOfMaps first, PolynomialAsListOfMaps second) {
+    public static PolynomialAsListOfMaps multiple(PolynomialAsListOfMaps first, PolynomialAsListOfMaps second) {
         List<SingleExpression> expressions = new ArrayList<>();
         for (SingleExpression firstExpression : first.getExpressions()) {
             for (SingleExpression secondExpression : second.getExpressions()) {
@@ -142,7 +144,7 @@ public class PolynomialAsListOfMaps {
         throw new WrongFormatException();
     }
 
-    public int degree(List<String> names) {
+    public int degree(Set<String> names) {
         for (String name : names) {
             if (!VARIABLE_IN_EXPRESSION.matcher(name).matches()) {
                 throw new WrongFormatException();
@@ -185,31 +187,44 @@ public class PolynomialAsListOfMaps {
                 }
             }
 
-            if (matchPower != Integer.MAX_VALUE && expression.getConstant() - matchPower * singleExpression.getConstant() != 0) {
+            if (matchPower != Integer.MAX_VALUE) {
                 SingleExpressionPowers newPowers = new SingleExpressionPowers();
                 for (Map.Entry<VariableInMap, Integer> entry : expressionPowers.getPowersSet()) {
-                    if (powersToReplace.getPower(entry.getKey()) != null) {
-                        int power = entry.getValue() - matchPower * powersToReplace.getPower(entry.getKey());
-                        if (power != 0) {
-                            newPowers.putPower(entry.getKey(), power);
-                        }
-                    } else {
-                        newPowers.putPower(entry.getKey(), entry.getValue());
+                    int power = entry.getValue() - matchPower * powersToReplace.getPower(entry.getKey());
+                    if (power != 0) {
+                        newPowers.putPower(entry.getKey(), power);
                     }
                 }
 
                 for (int i = 1; i < matchPower; i++) {
                     replacementPolynomial.multiple(replacementPolynomial);
                 }
+                double newConstant = expression.getConstant() - matchPower * singleExpression.getConstant();
 
                 PolynomialAsListOfMaps afterMultiplying = multiple(
-                        new PolynomialAsListOfMaps(new SingleExpression(newPowers, expression.getConstant() - matchPower * singleExpression.getConstant())),
+                        new PolynomialAsListOfMaps(new SingleExpression(newPowers, newConstant != 0 ? newConstant : 1)),
                         replacementPolynomial);
                 fragments.add(afterMultiplying);
             } else {
-                fragments.add(multiple(
-                        new PolynomialAsListOfMaps(new SingleExpression(expression.getPowers(), expression.getConstant() - singleExpression.getConstant())),
-                        replacementPolynomial));
+                if (expressionPowers.size() == 0) {
+                    int matching = (int) (expression.getConstant() / singleExpression.getConstant());
+
+                    for (int i = 1; i < matching; i++) {
+                        replacementPolynomial.multiple(replacementPolynomial);
+                    }
+                    double remainingConstant = expression.getConstant() - matching * singleExpression.getConstant();
+                    if (remainingConstant != 0) {
+                        fragments.add(multiple(
+                                new PolynomialAsListOfMaps(
+                                        new SingleExpression(
+                                                new SingleExpressionPowers(), remainingConstant)),
+                                replacementPolynomial));
+                    } else {
+                        fragments.add(replacementPolynomial);
+                    }
+                } else {
+                    fragments.add(new PolynomialAsListOfMaps(expression));
+                }
             }
         }
         PolynomialAsListOfMaps result = new PolynomialAsListOfMaps();

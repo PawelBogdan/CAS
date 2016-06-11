@@ -12,7 +12,7 @@ public class SingleExpressionTest {
     private SingleExpression singleExpression;
 
     @Before
-    public void init(){
+    public void init() {
         SingleExpressionPowers powers = new SingleExpressionPowers();
         powers.putPower(new VariableInMap("example"), -5);
         singleExpression = new SingleExpression(powers, 3);
@@ -59,5 +59,6 @@ public class SingleExpressionTest {
     @Test
     public void testToString() throws Exception {
         assertEquals("3.0*example^-5", singleExpression.toString());
+        assertEquals("", new SingleExpression(new SingleExpressionPowers()).toString());
     }
 }

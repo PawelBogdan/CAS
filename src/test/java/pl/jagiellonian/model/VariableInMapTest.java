@@ -15,6 +15,7 @@ public class VariableInMapTest {
     @Test
     public void testGetName() throws Exception {
         assertEquals("first", variableInMapFirst.getName());
+        assertEquals("first", variableInMapFirst.toString());
     }
 
     @Test

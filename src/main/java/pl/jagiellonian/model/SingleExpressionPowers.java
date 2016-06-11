@@ -8,11 +8,15 @@ import static java.lang.String.format;
 public class SingleExpressionPowers {
     private final Map<VariableInMap, Integer> powers = new HashMap<>();
 
-    public Integer getPower(VariableInMap variable) {
-        return powers.get(variable);
+    public int size() {
+        return powers.size();
     }
 
-    public Set<Map.Entry<VariableInMap, Integer>> getPowersSet() {
+    public Integer getPower(VariableInMap variable) {
+        return powers.get(variable) != null ? powers.get(variable) : 0;
+    }
+
+    protected Set<Map.Entry<VariableInMap, Integer>> getPowersSet() {
         return powers.entrySet();
     }
 
@@ -24,7 +28,7 @@ public class SingleExpressionPowers {
         powers.put(variable, power);
     }
 
-    public void putPower(Map.Entry<VariableInMap, Integer> entry){
+    public void putPower(Map.Entry<VariableInMap, Integer> entry) {
         powers.put(entry.getKey(), entry.getValue());
     }
 
@@ -37,7 +41,7 @@ public class SingleExpressionPowers {
         }
     }
 
-    public void addPower(Map.Entry<VariableInMap, Integer> entry){
+    public void addPower(Map.Entry<VariableInMap, Integer> entry) {
         addPower(entry.getKey(), entry.getValue());
     }
 
