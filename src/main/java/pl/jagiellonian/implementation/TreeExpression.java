@@ -141,6 +141,25 @@ public class TreeExpression implements ITreeExpression {
         return parenthesis;
     }
 
+    /**
+     * This method return the highest degree for list of params
+     * using recursive function
+     *
+     * @param variables list of {@link IVariable} to find in expression
+     * @return int the highest degree for list of param
+     */
+    @Override
+    public int degree(List<IVariable> variables) {
+        return recursionDegree(variables, this, 0);
+    }
+
+    /**
+     * This method return the highest degree for one param
+     * using recursive function
+     *
+     * @param variable param {@link IVariable} to find in expression
+     * @return int the highest degree for one param
+     */
     @Override
     public int degree(IVariable variable) {
         List<IVariable> list = new ArrayList<>();
@@ -148,6 +167,15 @@ public class TreeExpression implements ITreeExpression {
         return recursionDegree(list, this, 0);
     }
 
+    /**
+     * This function calculate the highest degree for expression
+     * visiting tree in recursion
+     *
+     * @param search list of {@link IVariable} to find in expression
+     * @param variable root element
+     * @param degree current degree
+     * @return int the highest degree for list of param
+     */
     private int recursionDegree(List<IVariable> search, IVariable variable, int degree) {
         if (variable.isExpression()) {
             TreeExpression treeExpression = (TreeExpression) variable;
@@ -192,41 +220,8 @@ public class TreeExpression implements ITreeExpression {
         return this.children.get(0);
     }
 
-    @Override
-    public int degree(List<IVariable> variables) {
-        return recursionDegree(variables, this, 0);
-    }
-
     public List<IVariable> getChildren() {
         return this.children;
-    }
-
-    public void test() {
-        for(IVariable el : this.children) {
-            if(el.isExpression()) {
-                System.out.println(el);
-                ((TreeExpression) el).test();
-            } else {
-                System.out.println("k:"+el);
-            }
-            //if(el.isExpression()) {
-                //TreeExpression temp = (TreeExpression)el;
-                //if(temp.getOperation()==Operation.POW) {
-                    //System.out.println(temp.getOperation());
-                    //System.out.println(el);
-//                    System.out.println(((TreeExpression) el).getOperation());
-//                    //System.out.println(temp.getLastChild());
-//                    for (IVariable i : temp.getChildren()) {
-//                        System.out.println("child: " + i);
-//                    }
-//                    System.out.println("");
-                //}
-                //((TreeExpression)el).test();
-//            } else {
-//                //System.out.println("el:"+el);
-//            }
-
-        }
     }
 
     public Operation getOperation() {
