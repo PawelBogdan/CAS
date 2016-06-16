@@ -1,24 +1,41 @@
 package pl.jagiellonian.Models;
 
 import pl.jagiellonian.exceptions.WrongFormatException;
+import pl.jagiellonian.utils.MonomialOrder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by lukaszrzepka on 11.05.2016.
  */
 public class PolynomialAsMap {
     private static final Pattern VARIABLE = Pattern.compile("x_([1-9][0-9]*)");
-
+    private static final Comparator<List<Integer>> LEXICOGRAPHIC_COMPARATOR = (o1, o2) -> {
+        int temp;
+        for (int i = 0; i < o1.size(); i++) {
+            temp = Integer.compare(o1.get(i), o2.get(i));
+            if (temp != 0) return -temp;
+        }
+        return 0;
+    };
+    private static final Comparator<List<Integer>> GRADED_COMPARATOR = (o1, o2) -> {
+        int temp = Integer.compare(o1.stream().mapToInt(Integer::intValue).sum(), o2.stream().mapToInt(Integer::intValue).sum());
+        if (temp != 0) return -temp;
+        for (int i = 0; i < o1.size(); i++) {
+            temp = Integer.compare(o1.get(i), o2.get(i));
+            if (temp != 0) return -temp;
+        }
+        return 0;
+    };
     private Map<List<Integer>, Integer> polynomialMap;
+    private MonomialOrder monomialOrder;
 
     public PolynomialAsMap(Map<List<Integer>, Integer> polynomialMap) {
         this.polynomialMap = polynomialMap;
+        this.monomialOrder = MonomialOrder.GRADED_LEXICOGRAPHIC;
     }
 
     public Map<List<Integer>, Integer> getPolynomialMap() {
@@ -27,6 +44,14 @@ public class PolynomialAsMap {
 
     public void setPolynomialMap(Map<List<Integer>, Integer> polynomialMap) {
         this.polynomialMap = polynomialMap;
+    }
+
+    /**
+     * Sets the monomial order to be applied in {@link #toString()} method.
+     * Default is {@link MonomialOrder#GRADED_LEXICOGRAPHIC}.
+     */
+    public void setMonomialOrder(MonomialOrder monomialOrder) {
+        this.monomialOrder = monomialOrder;
     }
 
     public PolynomialAsMap multipleWith(PolynomialAsMap myPolynomial) {
@@ -185,49 +210,46 @@ public class PolynomialAsMap {
 
     @Override
     public String toString() {
-        StringBuilder polynomialStringBuilder = new StringBuilder();
+        String output = "";
+        switch (monomialOrder) {
+            case LEXICOGRAPHIC:
+                output = polynomialMap.entrySet().stream()
+                        .sorted((o1, o2) -> LEXICOGRAPHIC_COMPARATOR.compare(o1.getKey(), o2.getKey()))
+                        .map(PolynomialAsMap::getMonomialFromEntry)
+                        .collect(Collectors.joining(" "));
+                break;
+            case GRADED_LEXICOGRAPHIC:
+                output = polynomialMap.entrySet().stream()
+                        .sorted((o1, o2) -> GRADED_COMPARATOR.compare(o1.getKey(), o2.getKey()))
+                        .map(PolynomialAsMap::getMonomialFromEntry)
+                        .collect(Collectors.joining(" "));
+                break;
+        }
+        return output.startsWith("+ ") ? output.substring(2) : output;
+    }
 
-        for (Map.Entry<List<Integer>, Integer> monomial : this.polynomialMap.entrySet()) {
-            List<Integer> monomialPowers = monomial.getKey();
-            Integer monomialCoefficient = monomial.getValue();
+    private static String getMonomialFromEntry(Map.Entry<List<Integer>, Integer> entry) {
+        final StringBuilder builder = new StringBuilder();
 
-            if (monomialCoefficient == 1 || monomialCoefficient == -1) {
-                if (monomialCoefficient > 0) {
-                    polynomialStringBuilder.append("+");
-                } else {
-                    polynomialStringBuilder.append("-");
+        boolean skipValue = Math.abs(entry.getValue()) == 1;
+        if (entry.getValue() > 0) {
+            builder.append("+ ");
+            if (!skipValue) builder.append(entry.getValue());
+        } else if (entry.getValue() < 0) {
+            builder.append("- ");
+            if (!skipValue) builder.append(Math.abs(entry.getValue()));
+        } else return "";
+
+        for (int i = 0; i < entry.getKey().size(); i++) {
+            if (entry.getKey().get(i) != 0) {
+                if (!skipValue) builder.append("*");
+                builder.append("x_" + (i + 1));
+                if (entry.getKey().get(i) != 1) {
+                    builder.append("^" + entry.getKey().get(i));
                 }
-            } else if (monomialCoefficient != 0) {
-                if (monomialCoefficient > 0) {
-                    polynomialStringBuilder.append("+");
-                }
-                polynomialStringBuilder.append(monomialCoefficient).append("*");
+                skipValue = false;
             }
-
-            for (int i = 0; i < monomialPowers.size(); i++) {
-                if (monomialPowers.get(i) == 1) {
-                    if (i + 1 == monomialPowers.size()) {
-                        polynomialStringBuilder.append("x_").append(i + 1);
-                    } else {
-                        polynomialStringBuilder.append("x_").append(i + 1).append("*");
-                    }
-                } else if (monomialPowers.get(i) != 0) {
-                    if (i + 1 == monomialPowers.size()) {
-                        polynomialStringBuilder.append("x_").append(i + 1).append("^").append(monomialPowers.get(i));
-                    } else {
-                        polynomialStringBuilder.append("x_").append(i + 1).append("^").append(monomialPowers.get(i)).append("*");
-                    }
-                }
-            }
         }
-
-        if (polynomialStringBuilder.charAt(0) == '+') {
-            polynomialStringBuilder.deleteCharAt(0);
-        }
-        if (polynomialStringBuilder.charAt(polynomialStringBuilder.length() - 1) == '*') {
-            polynomialStringBuilder.deleteCharAt(polynomialStringBuilder.length() - 1);
-        }
-
-        return polynomialStringBuilder.toString();
+        return builder.toString();
     }
 }
