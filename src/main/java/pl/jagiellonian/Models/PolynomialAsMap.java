@@ -185,7 +185,49 @@ public class PolynomialAsMap {
 
     @Override
     public String toString() {
-        //TODO
-        return polynomialMap.toString();
+        StringBuilder polynomialStringBuilder = new StringBuilder();
+
+        for (Map.Entry<List<Integer>, Integer> monomial : this.polynomialMap.entrySet()) {
+            List<Integer> monomialPowers = monomial.getKey();
+            Integer monomialCoefficient = monomial.getValue();
+
+            if (monomialCoefficient == 1 || monomialCoefficient == -1) {
+                if (monomialCoefficient > 0) {
+                    polynomialStringBuilder.append("+");
+                } else {
+                    polynomialStringBuilder.append("-");
+                }
+            } else if (monomialCoefficient != 0) {
+                if (monomialCoefficient > 0) {
+                    polynomialStringBuilder.append("+");
+                }
+                polynomialStringBuilder.append(monomialCoefficient).append("*");
+            }
+
+            for (int i = 0; i < monomialPowers.size(); i++) {
+                if (monomialPowers.get(i) == 1) {
+                    if (i + 1 == monomialPowers.size()) {
+                        polynomialStringBuilder.append("x_").append(i + 1);
+                    } else {
+                        polynomialStringBuilder.append("x_").append(i + 1).append("*");
+                    }
+                } else if (monomialPowers.get(i) != 0) {
+                    if (i + 1 == monomialPowers.size()) {
+                        polynomialStringBuilder.append("x_").append(i + 1).append("^").append(monomialPowers.get(i));
+                    } else {
+                        polynomialStringBuilder.append("x_").append(i + 1).append("^").append(monomialPowers.get(i)).append("*");
+                    }
+                }
+            }
+        }
+
+        if (polynomialStringBuilder.charAt(0) == '+') {
+            polynomialStringBuilder.deleteCharAt(0);
+        }
+        if (polynomialStringBuilder.charAt(polynomialStringBuilder.length() - 1) == '*') {
+            polynomialStringBuilder.deleteCharAt(polynomialStringBuilder.length() - 1);
+        }
+
+        return polynomialStringBuilder.toString();
     }
 }
