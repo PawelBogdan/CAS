@@ -41,6 +41,56 @@ public class PolynomialAsMapTest {
     }
 
     @Test
+    public void substituteComplexTest() {
+        Map<List<Integer>, Integer> polynomialMap = new HashMap<>();
+        polynomialMap.put(new ArrayList<>(Arrays.asList(5, 1, 2)), -3);
+        polynomialMap.put(new ArrayList<>(Arrays.asList(1, 4, 0, 2)), 3);
+        PolynomialAsMap polynomialAsMap = new PolynomialAsMap(polynomialMap);
+        //{[5, 1, 2]=-3, [1, 4, 0, 2]=3}
+
+        Map<List<Integer>, Integer> polynomialToReplace = new HashMap<>();
+        polynomialToReplace.put(new ArrayList<>(Arrays.asList(3, 1, 2)), -2);
+        PolynomialAsMap polynomialAsMapToReplace = new PolynomialAsMap(polynomialToReplace);
+        //{[3, 1, 2]=-3}
+
+        Map<List<Integer>, Integer> polynomialReplacement = new HashMap<>();
+        polynomialReplacement.put(new ArrayList<>(Arrays.asList(5, 3, -1, 4)), 2);
+        PolynomialAsMap polynomialAsMapReplacement = new PolynomialAsMap(polynomialReplacement);
+        //{[5, 3, -1, 4]=2}
+
+        polynomialAsMap.substitute(polynomialAsMapToReplace, polynomialAsMapReplacement);
+        Map<List<Integer>, Integer> polynomialTest = polynomialAsMap.getPolynomialMap();
+        assertEquals(2, polynomialTest.size());
+        List<Integer> first = new ArrayList<>(Arrays.asList(1, 4, 0, 2));
+        List<Integer> second = new ArrayList<>(Arrays.asList(7, 3, -1, 4));
+        assertEquals(3, polynomialTest.get(first).intValue());
+        assertEquals(-2, polynomialTest.get(second).intValue());
+        Iterator iterator = polynomialTest.keySet().iterator();
+        assertEquals(first, iterator.next());
+        assertEquals(second, iterator.next());
+    }
+
+    @Test
+    public void substituteWithZeroTest() {
+        Map<List<Integer>, Integer> polynomialMap = new HashMap<>();
+        polynomialMap.put(new ArrayList<>(Arrays.asList(1, 4)), 3);
+        PolynomialAsMap polynomialAsMap = new PolynomialAsMap(polynomialMap);
+
+        Map<List<Integer>, Integer> polynomialToReplace = new HashMap<>();
+        polynomialToReplace.put(new ArrayList<>(Arrays.asList(1, 2)), 3);
+        PolynomialAsMap polynomialAsMapToReplace = new PolynomialAsMap(polynomialToReplace);
+
+        Map<List<Integer>, Integer> polynomialReplacement = new HashMap<>();
+        polynomialReplacement.put(new ArrayList<>(Arrays.asList(5, 3, -1, 4)), 2);
+        PolynomialAsMap polynomialAsMapReplacement = new PolynomialAsMap(polynomialReplacement);
+        //{[5, 3, -1, 4]=2}
+
+        polynomialAsMap.substitute(polynomialAsMapToReplace, polynomialAsMapReplacement);
+        Map<List<Integer>, Integer> resultMap = new HashMap<>();
+        assertEquals(resultMap, polynomialAsMap.getPolynomialMap());
+    }
+
+    @Test
     public void degreeValidVariableTest() {
         // 3x_2x_3^2+(-1)x_1^2x_3^4+(-1)x_1^3x_2^2
         Map<List<Integer>, Integer> map = new HashMap<>();
