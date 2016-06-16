@@ -2,6 +2,6 @@
 <Configuration>
     <Loggers>
         <Logger name="pl.jagiellonian.Source" level="trace" />
-        <Logger name="pl.jagiellonian.InitTest" level="trace" />
+        <Logger name="pl.jagiellonian.TreeExpressionTest" level="trace" />
     </Loggers>
 </Configuration>
