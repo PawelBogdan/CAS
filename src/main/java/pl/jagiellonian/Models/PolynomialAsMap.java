@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  */
 public class PolynomialAsMap {
     private static final Pattern VARIABLE = Pattern.compile("x_([1-9][0-9]*)");
-    private static final Comparator<List<Integer>> lexicographicComparator = (o1, o2) -> {
+    private static final Comparator<List<Integer>> LEXICOGRAPHIC_COMPARATOR = (o1, o2) -> {
         int temp;
         for (int i = 0; i < o1.size(); i++) {
             temp = Integer.compare(o1.get(i), o2.get(i));
@@ -21,7 +21,7 @@ public class PolynomialAsMap {
         }
         return 0;
     };
-    private static final Comparator<List<Integer>> gradedComparator = (o1, o2) -> {
+    private static final Comparator<List<Integer>> GRADED_COMPARATOR = (o1, o2) -> {
         int temp = Integer.compare(o1.stream().mapToInt(Integer::intValue).sum(), o2.stream().mapToInt(Integer::intValue).sum());
         if (temp != 0) return -temp;
         for (int i = 0; i < o1.size(); i++) {
@@ -68,27 +68,122 @@ public class PolynomialAsMap {
 
                 List<Integer> monomialPowersResult = new ArrayList<>();
 
-                for (int i = 0; i < thisMonomialPowers.size(); i++) {
-                    monomialPowersResult.add(thisMonomialPowers.get(i) + monomialPowers.get(i));
+                int i = 0;
+                for (; i < thisMonomialPowers.size(); i++) {
+                    if (monomialPowers.size() > i) {
+                        monomialPowersResult.add(thisMonomialPowers.get(i) + monomialPowers.get(i));
+                    } else {
+                        monomialPowersResult.add(thisMonomialPowers.get(i));
+                    }
+                }
+                for (; i < monomialPowers.size(); i++) {
+                    monomialPowersResult.add(monomialPowers.get(i));
                 }
 
                 Integer monomialResultCoefficient = thisMonomialCoefficient * monomialCoefficient;
                 polynomialResult.put(monomialPowersResult, monomialResultCoefficient);
             }
         }
-        PolynomialAsMap polynomialAsMap = new PolynomialAsMap(polynomialResult);
-        return polynomialAsMap;
+        return new PolynomialAsMap(polynomialResult);
+    }
+
+    public PolynomialAsMap addPolynomial(PolynomialAsMap polynomialAsMap) {
+        Map<List<Integer>, Integer> polynomialToAddMap = new HashMap<>(polynomialAsMap.getPolynomialMap());
+        for (Map.Entry<List<Integer>, Integer> entry : polynomialMap.entrySet()) {
+            if (polynomialToAddMap.get(entry.getKey()) != null) {
+                polynomialToAddMap.put(entry.getKey(), polynomialToAddMap.get(entry.getKey()) + entry.getValue());
+            } else {
+                polynomialToAddMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return new PolynomialAsMap(polynomialToAddMap);
+    }
+
+    /**
+     * Method for replacing single expression in polynomial.
+     * @param polynomialToReplace Single expression to replace as PolynomialAsMap object
+     * @param polynomialReplacement PolynomialAsMap object to insert instead of replaced expression
+     * @throws WrongFormatException When PolynomialAsMap to replace is more then single expression
+     */
+    public void substitute(PolynomialAsMap polynomialToReplace, PolynomialAsMap polynomialReplacement) {
+        if (polynomialToReplace.polynomialMap.size() != 1) {
+            throw new WrongFormatException();
+        }
+        Map.Entry<List<Integer>, Integer> toReplaceEntry = polynomialToReplace.polynomialMap.entrySet().iterator().next();
+        int maxIndexToReplace = toReplaceEntry.getKey().size();
+
+        List<PolynomialAsMap> fragments = new ArrayList<>();
+        VariablePowers:
+        for (Map.Entry<List<Integer>, Integer> entry : polynomialMap.entrySet()) {
+
+            int size = entry.getKey().size();
+            if (maxIndexToReplace > size) {
+                fragments.add(createSinglePolynomial(entry.getKey(), entry.getValue()));
+                continue;
+            }
+            int matchPower = Integer.MAX_VALUE;
+            for (int i = 0; i < maxIndexToReplace; i++) {
+                int power = toReplaceEntry.getKey().get(i);
+                if (power > entry.getKey().get(i)) {
+                    fragments.add(createSinglePolynomial(entry.getKey(), entry.getValue()));
+                    continue VariablePowers;
+                }
+                if (entry.getKey().get(i) / power < matchPower) {
+                    matchPower = entry.getKey().get(i) / power;
+                }
+            }
+
+            if (matchPower < Integer.MAX_VALUE) {
+                PolynomialAsMap multipliedToReplace = multipleReplacement(polynomialToReplace, matchPower);
+                int constantToReplace = entry.getValue() - multipliedToReplace.getPolynomialMap().values().iterator().next();
+                if (constantToReplace == 0) {
+                    continue;
+                }
+
+                PolynomialAsMap beforeMultiplying = createSinglePolynomial(subtractPowers(entry.getKey(), multipliedToReplace.getPolynomialMap().keySet().iterator().next()), constantToReplace);
+                fragments.add(beforeMultiplying.multipleWith(polynomialReplacement));
+            } else if (toReplaceEntry.getValue() != null) {
+                fragments.add(createSinglePolynomial(entry.getKey(), entry.getValue() - toReplaceEntry.getValue()).multipleWith(polynomialReplacement));
+            } else {
+                fragments.add(createSinglePolynomial(entry.getKey(), entry.getValue()));
+            }
+        }
+        PolynomialAsMap result = new PolynomialAsMap(new HashMap<>());
+        for (PolynomialAsMap polynomialAsMap : fragments) {
+            result = result.addPolynomial(polynomialAsMap);
+        }
+        setPolynomialMap(result.getPolynomialMap());
+    }
+
+    private List<Integer> subtractPowers(List<Integer> powers, List<Integer> toSubtract) {
+        for (int i = 0; i < toSubtract.size(); i++) {
+            powers.set(i, powers.get(i) - toSubtract.get(i));
+        }
+        return powers;
+    }
+
+    private PolynomialAsMap multipleReplacement(PolynomialAsMap replacement, Integer matchPower) {
+        PolynomialAsMap multipliedReplacement = replacement;
+        for (int i = 1; i < matchPower; i++) {
+            multipliedReplacement = multipliedReplacement.multipleWith(replacement);
+        }
+        return multipliedReplacement;
+    }
+
+    private PolynomialAsMap createSinglePolynomial(List<Integer> variablePowers, int constant) {
+        Map<List<Integer>, Integer> map = new HashMap<>();
+        map.put(variablePowers, constant);
+        return new PolynomialAsMap(map);
     }
 
     public int degree(String variable) {
         Matcher matcher = VARIABLE.matcher(variable);
         if (matcher.matches()) {
             int index = Integer.parseInt(matcher.group(1)) - 1;
-            int max = polynomialMap.keySet().parallelStream()
+            return polynomialMap.keySet().parallelStream()
                     .filter(degreeList -> index < degreeList.size())
                     .mapToInt(degreeList -> degreeList.get(index))
                     .max().orElse(0);
-            return max;
         }
         throw new WrongFormatException();
     }
@@ -104,14 +199,13 @@ public class PolynomialAsMap {
             }
         }
 
-        int max = polynomialMap.keySet().parallelStream()
+        return polynomialMap.keySet().parallelStream()
                 .mapToInt(degreeList ->
                         indexes.parallelStream()
                                 .filter(index -> index < degreeList.size() && degreeList.get(index) > 0)
                                 .mapToInt(degreeList::get)
                                 .sum())
                 .max().orElse(0);
-        return max;
     }
 
     @Override
@@ -120,13 +214,13 @@ public class PolynomialAsMap {
         switch (monomialOrder) {
             case LEXICOGRAPHIC:
                 output = polynomialMap.entrySet().stream()
-                        .sorted((o1, o2) -> lexicographicComparator.compare(o1.getKey(), o2.getKey()))
+                        .sorted((o1, o2) -> LEXICOGRAPHIC_COMPARATOR.compare(o1.getKey(), o2.getKey()))
                         .map(PolynomialAsMap::getMonomialFromEntry)
                         .collect(Collectors.joining(" "));
                 break;
             case GRADED_LEXICOGRAPHIC:
                 output = polynomialMap.entrySet().stream()
-                        .sorted((o1, o2) -> gradedComparator.compare(o1.getKey(), o2.getKey()))
+                        .sorted((o1, o2) -> GRADED_COMPARATOR.compare(o1.getKey(), o2.getKey()))
                         .map(PolynomialAsMap::getMonomialFromEntry)
                         .collect(Collectors.joining(" "));
                 break;
