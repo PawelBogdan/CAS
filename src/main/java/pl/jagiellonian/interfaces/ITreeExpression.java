@@ -19,4 +19,6 @@ public interface ITreeExpression extends IVariable {
     ITreeExpression setParenthesis();
 
     Boolean getParenthesis();
+    int degree(IVariable variable);
+    int degree(List<IVariable> variables);
 }

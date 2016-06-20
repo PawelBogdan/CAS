@@ -147,6 +147,93 @@ public class TreeExpression implements ITreeExpression {
         return parenthesis;
     }
 
+    /**
+     * This method return the highest degree for list of params
+     * using recursive function
+     *
+     * @param variables list of {@link IVariable} to find in expression
+     * @return int the highest degree for list of param
+     */
+    @Override
+    public int degree(List<IVariable> variables) {
+        return recursionDegree(variables, this, 0);
+    }
+
+    /**
+     * This method return the highest degree for one param
+     * using recursive function
+     *
+     * @param variable param {@link IVariable} to find in expression
+     * @return int the highest degree for one param
+     */
+    @Override
+    public int degree(IVariable variable) {
+        List<IVariable> list = new ArrayList<>();
+        list.add(variable);
+        return recursionDegree(list, this, 0);
+    }
+
+    /**
+     * This function calculate the highest degree for expression
+     * visiting tree in recursion
+     *
+     * @param search list of {@link IVariable} to find in expression
+     * @param variable root element
+     * @param degree current degree
+     * @return int the highest degree for list of param
+     */
+    private int recursionDegree(List<IVariable> search, IVariable variable, int degree) {
+        if (variable.isExpression()) {
+            TreeExpression treeExpression = (TreeExpression) variable;
+            switch (treeExpression.getOperation()) {
+                case ADD:
+                case SUB:
+                    return Math.max(recursionDegree(search, treeExpression.getFirstChild(), degree),
+                            recursionDegree(search, treeExpression.getChildren().get(1), degree));
+                case DIV:
+                    return recursionDegree(search, treeExpression.getFirstChild(), degree)
+                            - recursionDegree(search, treeExpression.getChildren().get(1), degree);
+                case MULT:
+                    return recursionDegree(search, treeExpression.getFirstChild(), degree)
+                            + recursionDegree(search, treeExpression.getChildren().get(1), degree);
+                case POW:
+                    if (treeExpression.getChildren().get(1).isExpression()) {
+                        throw new WrongFormatException();
+                    }
+                    if (treeExpression.getFirstChild().isExpression()) {
+                        return recursionDegree(search, treeExpression.getFirstChild(), degree)
+                                * Integer.valueOf(treeExpression.getChildren().get(1).getName());
+                    } else {
+                        if (search.contains(treeExpression.getFirstChild())) {
+                            return Integer.valueOf(treeExpression.getChildren().get(1).getName());
+                        } else {
+                            return 0;
+                        }
+                    }
+            }
+        } else {
+            if (search.contains(variable)) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        return 0;
+    }
+
+    public IVariable getFirstChild() {
+        return this.children.get(0);
+    }
+
+    public List<IVariable> getChildren() {
+        return this.children;
+    }
+
+    public Operation getOperation() {
+        return this.operation;
+    }
+
     @Override
     public ITreeExpression expand(Map<String, String> map) {
         for (int i = 0; i < children.size(); i++) {
@@ -249,5 +336,10 @@ public class TreeExpression implements ITreeExpression {
     @Override
     public ITreeExpression pow(String variable) {
         return new TreeExpression(POW, this).addChild(new Variable(variable));
+    }
+
+    @Override
+    public String getName() {
+        return null;
     }
 }
