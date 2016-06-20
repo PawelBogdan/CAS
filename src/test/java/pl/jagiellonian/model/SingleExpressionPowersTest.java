@@ -8,9 +8,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.*;
 
 public class SingleExpressionPowersTest {
     private SingleExpressionPowers first;
