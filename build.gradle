@@ -9,7 +9,7 @@ apply plugin: 'jacoco'
 apply plugin: "com.github.kt3k.coveralls"
 
 group = 'pl.jagiellonian'
-version = '0.01'
+version = '0.1'
 description = """"""
 
 buildscript {
