@@ -9,7 +9,7 @@ apply plugin: 'jacoco'
 apply plugin: "com.github.kt3k.coveralls"
 
 group = 'pl.jagiellonian'
-version = '0.01'
+version = '0.1'
 description = """"""
 
 buildscript {
@@ -47,15 +47,19 @@ dependencies {
 
     // AssertJ
     testCompile "org.assertj:assertj-core:3.1.0"
+
+    // JUnitParams
+    compile group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.4'
+
 }
 
-test{
+test {
     testLogging.showStandardStreams = true
     testLogging.exceptionFormat = 'full'
 }
 
-jar{
-    archiveName "$project.name"+'.jar'
+jar {
+    archiveName "$project.name" + '.jar'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
         attributes 'Main-Class': 'pl.jagiellonian.Source'
