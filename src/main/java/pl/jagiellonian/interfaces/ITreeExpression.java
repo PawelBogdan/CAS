@@ -1,5 +1,7 @@
 package pl.jagiellonian.interfaces;
 
+import pl.jagiellonian.utils.Operation;
+
 import java.util.List;
 
 /**
@@ -19,6 +21,11 @@ public interface ITreeExpression extends IVariable {
     ITreeExpression setParenthesis();
 
     Boolean getParenthesis();
+
+    Operation getOperation();
+
+    List<IVariable> getChildren();
+
     int degree(IVariable variable);
     int degree(List<IVariable> variables);
 }
